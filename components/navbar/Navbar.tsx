@@ -1,15 +1,23 @@
+'use client';
+
 import React from 'react'
 import { GiGalaxy } from "react-icons/gi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from '../ui/button';
-import { Calendar } from '../ui/calendar';
+import { useRouter } from 'next/navigation';
+ 
 
 type Props = {}
 
-function Navbar({}: Props) {
+function Navbar({ }: Props) {
+
+    const router = useRouter();
+    
+    
+
   return (
-      <div className='w-full h-16 p-2 bg-neutral-800 text-white flex items-center justify-center gap-2'>
-          <div className="max-w-[80rem] w-full justify-between items-center gap-2 flex">
+      <div className='w-full h-16 p-2 fixed top-0 left-0 z-[50] bg-neutral-800 text-white flex items-center justify-center gap-2'>
+          <div className="max-w-[90rem] w-full justify-between items-center gap-2 flex">
               <div className="flex items-center group gap-4 cursor-pointer">
                   <GiGalaxy size={48} className='text-blue-400'/>
               <p className="text-2xl group-hover:tracking-wider transition-all duration-500 font-medium text-yellow-400"> HyperMint </p>
@@ -19,11 +27,11 @@ function Navbar({}: Props) {
 
 
               <div className="items-center hidden lg:flex  gap-6">
-                  <Button >Mint</Button>
-                  <Button >About</Button>
-                  <Button>Team</Button>
-                  <Button>FAQ</Button>
-                  <Button>Social Media</Button>
+                  <Button onClick={()=>router.replace("/")}>Home</Button>
+                  <Button onClick={()=>router.replace("/#mint")} >Mint</Button>
+                  <Button onClick={()=>router.replace("/#team")}>Team</Button>
+                  <Button onClick={()=>router.replace("/#FAQ")}>FAQ</Button>
+                  <Button onClick={()=>router.replace("/#social-media")}>Social Media</Button>
               </div>
 
               

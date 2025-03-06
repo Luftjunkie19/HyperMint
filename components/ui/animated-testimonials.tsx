@@ -1,15 +1,26 @@
 "use client";
 
-import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { TooltipProvider, TooltipTrigger, TooltipContent,Tooltip } from "./tooltip";
+import {  IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { IconType } from "react-icons/lib";
+
+
+interface SocialMedia{
+  icon: IconType,
+  url: string,
+  label: string
+}
 
 type Testimonial = {
   quote: string;
   name: string;
   designation: string;
   src: string;
+  socialMedia?:SocialMedia[]
 };
 export const AnimatedTestimonials = ({
   testimonials,
@@ -43,10 +54,10 @@ export const AnimatedTestimonials = ({
     return Math.floor(Math.random() * 21) - 10;
   };
   return (
-    <div className="max-w-sm md:max-w-4xl mx-auto antialiased font-sans px-4 md:px-8 lg:px-12 py-20">
-      <div className="relative grid grid-cols-1 md:grid-cols-2  gap-20">
+    <div className="max-w-sm md:max-w-[90rem] mx-auto antialiased font-sans px-4 md:px-8 lg:px-12 py-12">
+      <div className="relative grid grid-cols-1 md:grid-cols-2  gap-12">
         <div>
-          <div className="relative h-80 w-full">
+          <div className="relative h-80 max-w-sm w-full self-center">
             <AnimatePresence>
               {testimonials.map((testimonial, index) => (
                 <motion.div
@@ -92,7 +103,7 @@ export const AnimatedTestimonials = ({
             </AnimatePresence>
           </div>
         </div>
-        <div className="flex justify-between flex-col py-4">
+        <div className="flex justify-between max-w-4xl w-full flex-col py-4">
           <motion.div
             key={active}
             initial={{
@@ -112,13 +123,13 @@ export const AnimatedTestimonials = ({
               ease: "easeInOut",
             }}
           >
-            <h3 className="text-2xl font-bold dark:text-white text-black">
+            <h3 className="text-2xl font-bold text-white">
               {testimonials[active].name}
             </h3>
-            <p className="text-sm text-gray-500 dark:text-neutral-500">
+            <p className="text-sm text-blue-500">
               {testimonials[active].designation}
             </p>
-            <motion.p className="text-lg text-gray-500 mt-8 dark:text-neutral-300">
+            <motion.p className="text-lg text-white  mt-5 ">
               {testimonials[active].quote.split(" ").map((word, index) => (
                 <motion.span
                   key={index}
@@ -143,6 +154,45 @@ export const AnimatedTestimonials = ({
                 </motion.span>
               ))}
             </motion.p>
+
+            {testimonials[active].socialMedia && testimonials[active].socialMedia.length > 0 && (
+              <motion.div  className="flex items-center gap-6 my-4">
+                {testimonials[active].socialMedia.map((socialMedia, index) => (
+                 <motion.div initial={{
+                    filter: "blur(10px)",
+                    opacity: 0,
+                  scale: 0.6,
+                  }}
+                  animate={{
+                    filter: "blur(0px)",
+                    opacity: 1,
+                    scale:1,
+                    y: 0,
+                  }}
+                  transition={{
+                    duration: 0.2,
+                    ease: "easeInOut",
+                    delay: 0.02 * index,
+                    }} className="">
+                       <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link href={socialMedia.url}>
+                  <socialMedia.icon size={36}  className=" text-white" />
+                  </Link>
+        </TooltipTrigger>
+        <TooltipContent >
+          <p>{socialMedia.label}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+       
+                 
+                 </motion.div>
+                ))}
+              </motion.div>
+            )}
+
           </motion.div>
           <div className="flex gap-4 pt-12 md:pt-0">
             <button
