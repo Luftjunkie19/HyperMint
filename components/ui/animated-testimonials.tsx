@@ -158,7 +158,7 @@ export const AnimatedTestimonials = ({
             {testimonials[active].socialMedia && testimonials[active].socialMedia.length > 0 && (
               <motion.div  className="flex items-center gap-6 my-4">
                 {testimonials[active].socialMedia.map((socialMedia, index) => (
-                 <motion.div initial={{
+                 <motion.div key={index} initial={{
                     filter: "blur(10px)",
                     opacity: 0,
                   scale: 0.6,

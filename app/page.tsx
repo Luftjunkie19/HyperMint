@@ -1,3 +1,4 @@
+import AdditionalSection from "@/components/additional-section/AdditionalSection";
 import FaqSection from "@/components/faq-section/FaqSection";
 import MainSection from "@/components/main-section/MainSection";
 import MintSection from "@/components/mint-section/MintSection";
@@ -11,6 +12,7 @@ export default function Home() {
       <MainSection />
       <MintSection />
       <TeamSection />
+      <AdditionalSection />
       <FaqSection/>
     </div>
   );

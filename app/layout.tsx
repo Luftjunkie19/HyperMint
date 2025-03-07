@@ -4,6 +4,7 @@ import "./globals.css";
 import RainbowProvider from "@/providers/RainbowProvider";
 import Navbar from "@/components/navbar/Navbar";
 import { Toaster } from "@/components/ui/sonner"
+import WagmiConfigProvider from "@/providers/WagmiConfigProvider";
 const poppins = Poppins({
   variable: "--font-poppins",
 
@@ -27,11 +28,14 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} bg-neutral-700 antialiased`}
       >
+        <WagmiConfigProvider>
         <RainbowProvider>
+          
           <Navbar/>
           {children}
           <Toaster/>
-        </RainbowProvider>
+            </RainbowProvider>
+        </WagmiConfigProvider>
       </body>
     </html>
   );
