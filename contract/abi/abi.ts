@@ -12,4 +12,9 @@ export const abi = [
     ],
     outputs: [],
   },
+  {"type":"function","name":"getUsersToken",
+    "inputs":[{"name":"user","type":"address","internalType":"address"}],
+    "outputs":[{"name":"","type":"uint256[]","internalType":"uint256[]"}],
+  "stateMutability":"view"},
+  {"type":"function","name":"tokenURI","inputs":[{"name":"tokenId","type":"uint256","internalType":"uint256"}],"outputs":[{"name":"","type":"string","internalType":"string"}],"stateMutability":"view"}
 ] as const

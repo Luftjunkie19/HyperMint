@@ -11,9 +11,10 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Inbox } from 'lucide-react';
 import { toast } from "sonner"
-import { useWriteContract, type BaseError, useWaitForTransactionReceipt, useAccount} from 'wagmi';
+import { useWriteContract, type BaseError, useWaitForTransactionReceipt, useAccount, useReadContract} from 'wagmi';
 import { abi } from '@/contract/abi/abi';
 import ethers from "ethers";
+import NFTMinted from './NFTMinted';
 type Props = {}
 
 function MintSection({}: Props) {
@@ -86,17 +87,26 @@ function MintSection({}: Props) {
 
   
       writeContract({
-        address: '0xCB18961358172F4D5f44525f72c0AAfCe9956dDD',
+        address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
         abi,
         functionName: 'mintNFT',
         account: address,
-        args: [(uploadResponse as string), BigInt(1), ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]],
+        args: [(`${uploadResponse}` as string), BigInt(1), ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]],
       });
 
       
     
   }
  
+
+  const { data } = useReadContract({
+abi:abi,
+address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
+    functionName: 'getUsersToken',
+    args: [address],
+  });
+
+
  
   return (
     <div id='mint' className='w-full max-w-[95rem] mx-auto flex flex-col p-2 gap-4'>
@@ -190,6 +200,8 @@ function MintSection({}: Props) {
           </div>
 
      
+{address && <p className='text-white'>Connected Wallet: {address}</p>}
+{address && data && data.map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
 
     </div>
   )
