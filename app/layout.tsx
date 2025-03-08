@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${poppins.variable} bg-neutral-700 antialiased`}
+        className={`${poppins.variable} bg-[#0D1117] antialiased`}
       >
         <WagmiConfigProvider>
         <RainbowProvider>

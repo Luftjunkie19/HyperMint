@@ -5,6 +5,7 @@ import { GiGalaxy } from "react-icons/gi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
+import { useIsMobile } from '@/hooks/use-mobile';
  
 
 type Props = {}
@@ -13,10 +14,10 @@ function Navbar({ }: Props) {
 
     const router = useRouter();
     
-    
+    const isMobile = useIsMobile();
 
   return (
-      <div className='w-full h-16 p-2 fixed top-0 left-0 z-[50] bg-neutral-800 text-white flex items-center justify-center gap-2'>
+      <div className='w-full h-16 p-2 fixed top-0 left-0 z-[50] bg-[#161B22]/70 backdrop-blur-lg   text-white flex items-center justify-center gap-2'>
           <div className="max-w-[90rem] w-full justify-between items-center gap-2 flex">
               <div className="flex items-center group gap-4 cursor-pointer">
                   <GiGalaxy size={48} className='text-blue-400'/>
@@ -36,7 +37,7 @@ function Navbar({ }: Props) {
 
               
               <div className="">
-                  <ConnectButton />
+                  <ConnectButton label='Connect' accountStatus={'address'} showBalance={isMobile ? false : true} chainStatus={'icon'}/>
               </div>
 
           </div>

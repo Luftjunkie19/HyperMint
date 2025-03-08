@@ -8,6 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
+    colors: {
+      'primary-color': '#1A1B41',
+      'secondary-color': '#161B22',
+      'accent-color': '#2ECC71',  
+    },
       animation: {
         move: "move 5s linear infinite",
       },

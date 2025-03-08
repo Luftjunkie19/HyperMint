@@ -9,14 +9,10 @@ import {
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
 import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
+
   sepolia,
   zksyncSepoliaTestnet,
-  etherlinkTestnet,
-  base,
+
 } from 'wagmi/chains';
 import {
   QueryClientProvider,
@@ -31,7 +27,7 @@ function RainbowProvider({children }: Props) {
     const config = getDefaultConfig({
   appName: 'My RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [mainnet, polygon, optimism, arbitrum, base, zksyncSepoliaTestnet, sepolia, etherlinkTestnet],
+  chains: [zksyncSepoliaTestnet, sepolia],
   ssr: true, // If your dApp uses server side rendering (SSR)
     });
     

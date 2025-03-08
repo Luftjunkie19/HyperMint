@@ -28,6 +28,8 @@ function MintSection({}: Props) {
       hash,
     });
 
+    const [name, setName] = useState<string>("");
+
   const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) toast.error("No files selected");
     const file = e.target!.files[0];
@@ -70,6 +72,7 @@ function MintSection({}: Props) {
 
     const formData = new FormData();
     formData.append("file", fileData!); 
+    formData.append("name", );
          const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
            body: formData,
@@ -87,7 +90,7 @@ function MintSection({}: Props) {
 
   
       writeContract({
-        address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
+        address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
         abi,
         functionName: 'mintNFT',
         account: address,
@@ -101,7 +104,7 @@ function MintSection({}: Props) {
 
   const { data } = useReadContract({
 abi:abi,
-address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
+address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
     functionName: 'getUsersToken',
     args: [address],
   });
@@ -163,7 +166,7 @@ address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
 
                 <div className="flex gap-1 flex-col">
                 <p className='text-white font-semibold'>NFT Name</p>
-                <Input name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
+                <Input onChange={(e) => setName(e.target.value)} name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
               </div>
 
                  <div className="flex gap-1 flex-col">
@@ -200,8 +203,14 @@ address: '0xa8B8373F690dcAe0aed18c5Fc38fe97D908eA6C0',
           </div>
 
      
-{address && <p className='text-white'>Connected Wallet: {address}</p>}
+    <div className="flex flex-col gap-3 text-white max-w-6xl mx-auto w-full">
+      <p className='text-3xl font-bold'>Your NFTs minted here</p>
+      <p className='max-w-3xl font-light text-sm w-full'>Here are the NFTs you have minted so far. You can now see them on your wallet and here as well. I'm sure it's first the beginning of your amazing journey with NFTs.</p>
+<div className="flex flex-wrap gap-2">
+
 {address && data && data.map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
+</div>
+    </div>
 
     </div>
   )
