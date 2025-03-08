@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const fileName = data.get("name");
     const file: File | null = fileData as unknown as File;
     const keyValues = data.get("keyValues");
-    const { cid, id, keyvalues  } = await pinata.upload.public.file(file).name(fileName as string).keyvalues(keyValues);
+    const { cid, id, keyvalues  } = await pinata.upload.public.file(file).name(fileName as string).keyvalues(JSON.parse(keyValues));
     const url = await pinata.gateways.public.convert(cid);
     return NextResponse.json(url, { status: 200 });
   } catch (e) {

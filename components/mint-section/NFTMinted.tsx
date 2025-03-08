@@ -21,7 +21,7 @@ function NFTMinted({index}: Props) {
   return (
     <CardContainer>
       <BackgroundGradient >
-    <CardBody className="bg-[#161B22]/70 backdrop-blur-3xl relative group/card flex flex-col gap-3  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-none max-w-sm w-full  h-auto rounded-xl p-6 border  ">
+    <CardBody className="bg-[#161B22]/70 backdrop-blur-3xl relative group/card flex flex-col gap-3  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-none max-w-sm w-full  h-auto rounded-xl py-10 px-6 border  ">
       <CardItem  className="w-full mt-4">
         <Image
           src={tokenURIData as string}

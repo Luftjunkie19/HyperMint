@@ -72,11 +72,17 @@ function MintSection({}: Props) {
 
     const formData = new FormData();
     formData.append("file", fileData!); 
-    formData.append("name", );
+    formData.append("name", name);
+    formData.append("keyValues", JSON.stringify({ 
+      "strength": "100",
+      "social": "52",
+      "health": "78",
+      "skills": "74",
+      "luck": "85"
+    }));
          const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
            body: formData,
-        
          });
     
     const uploadResponse = await uploadRequest.json();
@@ -203,11 +209,10 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
           </div>
 
      
-    <div className="flex flex-col gap-3 text-white max-w-6xl mx-auto w-full">
+    <div className="flex flex-col gap-3 text-white max-w-[90rem] mx-auto w-full">
       <p className='text-3xl font-bold'>Your NFTs minted here</p>
       <p className='max-w-3xl font-light text-sm w-full'>Here are the NFTs you have minted so far. You can now see them on your wallet and here as well. I'm sure it's first the beginning of your amazing journey with NFTs.</p>
-<div className="flex flex-wrap gap-2">
-
+<div className="flex flex-wrap gap-10">
 {address && data && data.map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
 </div>
     </div>
