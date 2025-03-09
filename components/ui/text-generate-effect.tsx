@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { motion, stagger, useAnimate } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { poppins } from "@/app/layout";
 
 export const TextGenerateEffect = ({
   words,
@@ -30,6 +31,7 @@ export const TextGenerateEffect = ({
     );
   }, [scope.current]);
 
+
   const renderWords = () => {
     return (
       <motion.div ref={scope}>
@@ -37,7 +39,7 @@ export const TextGenerateEffect = ({
           return (
             <motion.span
               key={word + idx}
-              className="dark:text-white text-black opacity-0"
+              className={`text-white text-sm poppins opacity-0 ${poppins.variable}`}
               style={{
                 filter: filter ? "blur(10px)" : "none",
               }}
@@ -52,7 +54,7 @@ export const TextGenerateEffect = ({
 
   return (
     <div className={cn("font-bold", className)}>
-      <div className="mt-4">
+      <div className="mt-1">
         <div className=" dark:text-white text-black text-2xl leading-snug tracking-wide">
           {renderWords()}
         </div>

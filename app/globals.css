@@ -177,3 +177,5 @@ Make sure disabled buttons don't get the pointer cursor.
 .no-visible-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+div::-webkit-scrollbar { display: none; }

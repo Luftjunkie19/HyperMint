@@ -3,17 +3,16 @@
 import React, { useRef, useState } from 'react'
 import { Button } from '../ui/button'
 import Image from 'next/image'
-  import { create } from 'ipfs-http-client';
 import Jaba from "../../public/gifs/jaba.gif";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '../ui/dialog';
-import { DialogHeader } from '../ui/dialog';
+import { DialogHeader, DialogClose } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Inbox } from 'lucide-react';
 import { toast } from "sonner"
+import { MultiStepLoader } from "../ui/multi-step-loader";
 import { useWriteContract, type BaseError, useWaitForTransactionReceipt, useAccount, useReadContract} from 'wagmi';
 import { abi } from '@/contract/abi/abi';
-import ethers from "ethers";
 import NFTMinted from './NFTMinted';
 type Props = {}
 
@@ -23,7 +22,7 @@ function MintSection({}: Props) {
   const [fileData, setFileData] = useState<File | null>(null);
   const { isConnected, address } = useAccount();
   const { data: hash, isPending, writeContract, error} = useWriteContract();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+  const { isLoading: isConfirming, isSuccess: isConfirmed  } =
     useWaitForTransactionReceipt({
       hash,
     });
@@ -52,6 +51,7 @@ function MintSection({}: Props) {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
+      console.log(reader.result as string);
       setImagePreview(reader.result as string);
     };
 
@@ -63,57 +63,113 @@ function MintSection({}: Props) {
 
 
 
-  const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if(!isConnected){
-      toast.error('You have to connect you wallet first');
-      return;
-    }
+const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
 
-    const formData = new FormData();
-    formData.append("file", fileData!); 
-    formData.append("name", name);
-    formData.append("keyValues", JSON.stringify({ 
-      "strength": "100",
-      "social": "52",
-      "health": "78",
-      "skills": "74",
-      "luck": "85"
-    }));
-         const uploadRequest = await fetch("/api/pinata/post", {
-        method: "POST",
-           body: formData,
-         });
-    
-    const uploadResponse = await uploadRequest.json();
-
-    console.log(uploadResponse);
-
-    if (uploadResponse.error) {
-          toast.error('Error uploading image');
-      return;
-    }
-
-  
-      writeContract({
-        address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
-        abi,
-        functionName: 'mintNFT',
-        account: address,
-        args: [(`${uploadResponse}` as string), BigInt(1), ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]],
-      });
-
-      
-    
+  if (!isConnected) {
+    toast.error("You have to connect your wallet first");
+    return;
   }
- 
+
+  // Step 1: Upload Image to IPFS
+  const formData = new FormData();
+  formData.append("file", fileData!);
+  formData.append("name", name);
+  formData.append("keyValues", JSON.stringify({
+    "strength": "100",
+    "social": "52",
+    "health": "78",
+    "skills": "74",
+    "luck": "85"
+  }));
+
+  const uploadRequest = await fetch("/api/pinata/post", {
+    method: "POST",
+    body: formData,
+  });
+
+  const uploadResponse = await uploadRequest.json();
+  console.log("Upload Response:", uploadResponse);
+
+  if (uploadResponse.error) {
+    toast.error("Error uploading image");
+    return;
+  }
+
+  const imageCID = uploadResponse.IpfsHash; // The image CID
+  const imageURI =  `ipfs://${imageCID}`;
+
+  console.log(imageURI);
+
+  // Step 2: Upload Metadata JSON to IPFS
+  const metadata = {
+    name: name,
+    description: "A unique NFT in my app",
+    image: imageURI, // Link to the image
+    attributes: [
+      { trait_type: "Strength", value: "100" },
+      { trait_type: "Social", value: "52" },
+      { trait_type: "Health", value: "78" },
+      { trait_type: "Skills", value: "74" },
+      { trait_type: "Luck", value: "85" }
+    ]
+  };
+
+  const metadataRequest = await fetch("/api/pinata/post", {
+    method: "POST",
+    body: JSON.stringify(metadata),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  const metadataResponse = await metadataRequest.json();
+  console.log("Metadata Upload Response:", metadataResponse);
+
+  if (metadataResponse.error) {
+    toast.error("Error uploading metadata");
+    return;
+  }
+
+  console.log(metadataResponse.IpfsHash, metadataResponse, `ipfs://${metadataResponse.IpfsHash}`);
+
+  const tokenURI = `ipfs://${metadataResponse.IpfsHash}`; // Use JSON CID
+
+  console.log(tokenURI, 'Token URI');
+  console.log(imageURI, 'Image URI');
+
+
+  // Step 3: Mint NFT
+  writeContract({
+    address: "0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836",
+    abi,
+    functionName: "mintNFT",
+    account: address,
+    args: [tokenURI, BigInt(0), ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]]
+  });
+};
+
+// Recently used contract: 0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836
 
   const { data } = useReadContract({
 abi:abi,
 address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
     functionName: 'getUsersToken',
-    args: [address],
+    args: [address]
   });
+
+
+  const loadingStates = [
+  {
+    text: "Transaction intialized....",
+  },
+  {
+    text: "Transaction confirming....",
+  },
+  {
+    text: "Transaction Confirmed ✅",
+  },
+
+];
+
 
 
  
@@ -121,10 +177,10 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
     <div id='mint' className='w-full max-w-[95rem] mx-auto flex flex-col p-2 gap-4'>
       <div className="flex flex-col gap-3">
         <p className='text-white text-2xl font-semibold'>Minting Options</p>
-          <div className="flex items-center gap-4 overflow-x-auto">
+          {/* <div className="flex items-center gap-4 overflow-x-auto">
               <Button className='text-base py-4'>Single Asset</Button>
               <Button className='text-base py-4'>Collection</Button>
-          </div>
+          </div> */}
       </div>
 
           <div className="flex items-center justify-between flex-col md:flex-row  gap-4 w-full">
@@ -183,17 +239,14 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
                 <p className='text-white font-semibold'>NFT Description</p>
                 <Textarea className='resize-none h-20' placeholder="Enter NFT Description" aria-label='NFT Description' />
               </div>
-                          
+                          <DialogClose asChild>
+
                 <Button className="py-3" onClick={submitForm}>
                   {isPending ? "Minting...." : 'Confirm'}
                 </Button>
+                          </DialogClose>
 
-                 {hash && <div>Transaction Hash: {hash}</div>}
-
-               <p>{JSON.stringify(error)}</p>
-      {error && (
-        <div>Error: {(error as BaseError).shortMessage || error.message}</div>
-      )}
+             
                           </DialogContent>
          
 </Dialog>
@@ -201,7 +254,7 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
 
              
                     
-        
+         <MultiStepLoader loadingStates={loadingStates} loading={isConfirming && !isConfirmed} duration={1000} />
         
             
               </div>
@@ -212,9 +265,13 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
     <div className="flex flex-col gap-3 text-white max-w-[90rem] mx-auto w-full">
       <p className='text-3xl font-bold'>Your NFTs minted here</p>
       <p className='max-w-3xl font-light text-sm w-full'>Here are the NFTs you have minted so far. You can now see them on your wallet and here as well. I'm sure it's first the beginning of your amazing journey with NFTs.</p>
-<div className="flex flex-wrap gap-10">
-{address && data && data.map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
-</div>
+
+     
+
+{address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
+  {data.slice(3,6).map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
+        </div>}
+
     </div>
 
     </div>
