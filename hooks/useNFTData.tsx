@@ -1,6 +1,7 @@
 'use client';
 
 import { abi } from '@/contract/abi/abi';
+import { holeskyContractHash, holeskyAbi } from '@/contract/abi/holeskyAbi';
 import { fetchImageURI } from '@/lib/actions';
 import React, { useCallback, useEffect } from 'react'
 import { useReadContract } from 'wagmi';
@@ -13,9 +14,9 @@ function useNFTData({ index}: Props) {
 
 
       const {data:tokenURI}= useReadContract({
-            abi:abi,
-            address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
-            functionName: 'tokenURI',
+            abi:holeskyAbi,
+            address: holeskyContractHash as `0x${string}`,
+            functionName: 'getUsersTokenInfo',
             args: [index],
       });
 

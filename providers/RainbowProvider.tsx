@@ -12,7 +12,7 @@ import {
 
   sepolia,
   zksyncSepoliaTestnet,
-
+  holesky
 } from 'wagmi/chains';
 import {
   QueryClientProvider,
@@ -27,7 +27,7 @@ function RainbowProvider({children }: Props) {
     const config = getDefaultConfig({
   appName: 'My RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [zksyncSepoliaTestnet, sepolia],
+  chains: [zksyncSepoliaTestnet, sepolia, holesky],
   ssr: true, // If your dApp uses server side rendering (SSR)
     });
     

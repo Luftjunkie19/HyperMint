@@ -10,10 +10,9 @@ import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Inbox } from 'lucide-react';
 import { toast } from "sonner"
-import { MultiStepLoader } from "../ui/multi-step-loader";
 import { useWriteContract, type BaseError, useWaitForTransactionReceipt, useAccount, useReadContract} from 'wagmi';
-import { abi } from '@/contract/abi/abi';
-import NFTMinted from './NFTMinted';
+import { holeskyAbi, holeskyContractHash } from '@/contract/abi/holeskyAbi';
+import NFTMintedCard from './NFTMintedCard';
 type Props = {
 
 }
@@ -30,6 +29,7 @@ function MintSection({}: Props) {
     });
 
     const [name, setName] = useState<string>("");
+    const [description, setDescription] = useState<string>("");
 
   const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) toast.error("No files selected");
@@ -77,6 +77,7 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
   const formData = new FormData();
   formData.append("file", fileData!);
   formData.append("name", name);
+  formData.append("description", description);
   formData.append("keyValues", JSON.stringify({
     "strength": "100",
     "social": "52",
@@ -106,7 +107,7 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
   // Step 2: Upload Metadata JSON to IPFS
   const metadata = {
     name: name,
-    description: "A unique NFT in my app",
+    description: description,
     image: imageURI, // Link to the image
     attributes: [
       { trait_type: "Strength", value: "100" },
@@ -141,36 +142,24 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
 
   // Step 3: Mint NFT
   writeContract({
-    address: "0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836",
-    abi,
+   abi:holeskyAbi,
+    address: holeskyContractHash as `0x${string}`,
     functionName: "mintNFT",
     account: address,
-    args: [tokenURI, BigInt(0), ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]]
+    args: [tokenURI, imageURI, description, ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]]
   });
 };
 
-// Recently used contract: 0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836
 
   const { data } = useReadContract({
-abi:abi,
-address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
-    functionName: 'getUsersToken',
+ abi:holeskyAbi,
+    address: holeskyContractHash as `0x${string}`,
+    functionName: 'getOwnersTokensAll',
     args: [address]
   });
 
 
-  const loadingStates = [
-  {
-    text: "Transaction intialized....",
-  },
-  {
-    text: "Transaction confirming....",
-  },
-  {
-    text: "Transaction Confirmed ✅",
-  },
-
-];
+  
 
 
 
@@ -233,13 +222,9 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
                 <Input onChange={(e) => setName(e.target.value)} name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
               </div>
 
-                 <div className="flex gap-1 flex-col">
-                <p className='text-white font-semibold'>NFT Symbol</p>
-                <Input name="NFT-symbol"  type='text' placeholder="Enter NFT Symbol" aria-label='NFT Symbol' />
-              </div>
               <div className="flex gap-1 flex-col">
                 <p className='text-white font-semibold'>NFT Description</p>
-                <Textarea className='resize-none h-20' placeholder="Enter NFT Description" aria-label='NFT Description' />
+                <Textarea className='resize-none h-20' onChange={(e) => setDescription(e.target.value)} placeholder="Enter NFT Description" aria-label='NFT Description' />
               </div>
                           <DialogClose asChild>
 
@@ -248,17 +233,13 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
                 </Button>
                           </DialogClose>
 
+{isPending && <p className='text-white text-center'>Minting....</p>}  
+                {error && <p>{error.message}-{error.name}</p>}
              
                           </DialogContent>
          
 </Dialog>
-                </div>
-
-             
-                    
-         <MultiStepLoader loadingStates={loadingStates} loading={isConfirming && !isConfirmed} duration={1000} />
-        
-            
+                </div>           
               </div>
               
           </div>
@@ -271,7 +252,7 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
      
 
 {address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
-  {data.map((item, index) => <NFTMinted  key={index} index={BigInt(item)} />)}
+  {data.map((item, index) => <NFTMintedCard  key={index} item={item} />)}
         </div>}
 
     </div>
