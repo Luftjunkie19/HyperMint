@@ -14,7 +14,9 @@ import { MultiStepLoader } from "../ui/multi-step-loader";
 import { useWriteContract, type BaseError, useWaitForTransactionReceipt, useAccount, useReadContract} from 'wagmi';
 import { abi } from '@/contract/abi/abi';
 import NFTMinted from './NFTMinted';
-type Props = {}
+type Props = {
+
+}
 
 function MintSection({}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -269,7 +271,7 @@ address: '0xE3855DEa7e9E59E7861aD89fDdC2D8C594C2D836',
      
 
 {address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
-  {data.slice(3,6).map((item, index) => <NFTMinted key={index} index={BigInt(item)} />)}
+  {data.map((item, index) => <NFTMinted  key={index} index={BigInt(item)} />)}
         </div>}
 
     </div>
