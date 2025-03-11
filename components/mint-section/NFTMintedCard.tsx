@@ -17,15 +17,12 @@ type Props = {item: {
 } }
 
 function NFTMintedCard({ item }: Props) {
-  
-  const {data}=useReadContract({
-     abi:holeskyAbi,
-        address: holeskyContractHash as `0x${string}`,
-        functionName: 'tokenURI',
-        args: [item.tokenId]
+    const {data}=useReadContract({
+    abi:holeskyAbi,
+    address: holeskyContractHash as `0x${string}`,
+    functionName: 'tokenURI',
+    args: [item.tokenId],
   })
-                    
-        
 
      return (     
        <>
@@ -37,13 +34,15 @@ function NFTMintedCard({ item }: Props) {
 <CardBody className="bg-[#161B22]/70 backdrop-blur-3xl relative group/card flex flex-col gap-3  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-none max-w-xs w-full  h-auto rounded-xl py-10 px-6 border  ">
 <CardItem  className="w-full mt-4">
   <Image
-    src={`https://ipfs.io/${item.tokenImageURI}`}
+    src={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`}
     height="500"
     width="500"
     className="h-60 max-w-64 w-full object-cover rounded-lg group-hover/card:shadow-xl"
     alt={`${BigInt(item.tokenId)} NFT`}
       />
-      <p className='opacity-0'>{item.tokenImageURI}</p>
+      <p  className='opacity-0'>
+      {data}
+      </p>
 </CardItem>
 
 <div className="flex flex-col">

@@ -165,7 +165,7 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
 
  
   return (
-    <div id='mint' className='w-full max-w-[95rem] mx-auto flex flex-col p-2 gap-4'>
+    <div id='mint' className='w-full max-w-[95rem] mx-auto flex flex-col p-3 gap-4'>
       <div className="flex flex-col gap-3">
         <p className='text-white text-2xl font-semibold'>Minting Options</p>
           {/* <div className="flex items-center gap-4 overflow-x-auto">
@@ -175,7 +175,7 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
       </div>
 
           <div className="flex items-center justify-between flex-col md:flex-row  gap-4 w-full">
-              <Image src={Jaba} alt='' width={100} height={100} className='w-80 h-64 lg:w-[32rem] lg:h-80' />
+              <Image src={Jaba} alt='' width={100} height={100} className='w-80 h-56 lg:w-[32rem] lg:h-80' />
               <div className="flex flex-col gap-6 max-w-3xl w-full text-white">
                   <h2 className="text-4xl font-bold">Mint Your NFT Now !</h2>
                   <p className="">Mint your own unique NFT, you must! Like Jaba, happy with his new token on his phone, so shall you be. Choose your collection or a single asset, the power is yours. Click the button, fill in the details, and finalize your creation. A journey of ownership, it begins now. Your NFT, your story. Take control, for greatness awaits. Unleash your creativity and make it yours!</p>
@@ -252,7 +252,7 @@ const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
      
 
 {address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
-  {data.map((item, index) => <NFTMintedCard  key={index} item={item} />)}
+  {data.map((item, index) => <NFTMintedCard  item={item} />)}
         </div>}
 
     </div>

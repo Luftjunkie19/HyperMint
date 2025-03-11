@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     // Handle Image Upload
     const data = await request.formData();
-    const file = data.get("file") as File | null;
+    const file = data.get("file") as File ;
     const fileName = data.get("name") as string;
     const keyValues = data.get("keyValues");
     const { cid, id, keyvalues  } = await pinata.upload.public.file(file).name(fileName as string).keyvalues(JSON.parse(keyValues as any));

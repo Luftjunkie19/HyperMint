@@ -5,7 +5,7 @@ type Props = {}
 
 function FaqSection({}: Props) {
   return (
-      <div id='FAQ' className='max-w-[95rem] w-full mx-auto flex flex-col gap-2'>
+      <div id='FAQ' className='max-w-[95rem] w-full mx-auto flex flex-col gap-2 p-4'>
           <p className='text-4xl font-bold text-white'>Frequently Asked Questions</p>
           <p className='font-light text-white '>This section is devoted to questions and answers that are frequently asked.</p>
 
