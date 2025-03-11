@@ -53,7 +53,7 @@ function NFTMintedCard({ item }: Props) {
 </CardItem>
 <CardItem
   as="p"
-  className="text-sm max-w-xs mt-2 textpwhite"
+  className="text-sm line-clamp-2 max-w-xs mt-2 textpwhite"
 >
    { `${item.description}`}
 </CardItem>
