@@ -15,16 +15,7 @@ export async function POST(request: NextRequest) {
     const file = data.get("file") as File | null;
     const fileName = data.get("name") as string;
     const keyValues = data.get("keyValues");
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    const { cid } = await pinata.upload.public
-      .file(file)
-      .name(fileName)
-      .keyvalues(keyValues ? JSON.parse(keyValues as string) : {});
-
+    const { cid, id, keyvalues  } = await pinata.upload.public.file(file).name(fileName as string).keyvalues(JSON.parse(keyValues as any));
     const url = await pinata.gateways.public.convert(cid);
     
     return NextResponse.json({ IpfsHash: cid, url }, { status: 200 });
