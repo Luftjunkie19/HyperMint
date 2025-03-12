@@ -35,8 +35,8 @@ function MintSection({}: Props) {
       <div className="flex flex-col gap-3">
         <p className='text-white text-2xl font-semibold'>Minting Options</p>
           <div className="flex items-center gap-4 overflow-x-auto">
-              <Button onClick={()=>setFormMintOption("Asset")}  className='text-base py-4'>Single Asset</Button>
-              <Button onClick={()=>setFormMintOption("Collection")}  className='text-base py-4'>Collection</Button>
+              <Button onClick={()=>setFormMintOption("Asset")} variant={formMintOption === "Asset" ? "default" : "secondary"}  className='text-base py-4'>Single Asset</Button>
+              <Button onClick={()=>setFormMintOption("Collection")} variant={formMintOption === "Collection" ? "default" : "secondary"}  className='text-base py-4'>Collection</Button>
           </div>
       </div>
 
@@ -50,8 +50,8 @@ function MintSection({}: Props) {
             
                 
                 </div>           
-              </div>
               {formMintOption === 'Asset' ? <TokenMinter/>  : <CollectionMinter/>}
+              </div>
           </div>
 
      

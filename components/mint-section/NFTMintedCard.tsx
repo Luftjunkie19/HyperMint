@@ -3,8 +3,6 @@ import React from 'react'
 import { BackgroundGradient } from '../ui/background-gradient';
 import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '../ui/3d-card';
-import { useReadContract } from 'wagmi';
-import { holeskyContractHash, holeskyAbi} from '@/contract/abi/holeskyAbi';
 type Props = {item: {
     tokenId: bigint;
     tokenURI: string;
@@ -17,12 +15,7 @@ type Props = {item: {
 } }
 
 function NFTMintedCard({ item }: Props) {
-    const {data}=useReadContract({
-    abi:holeskyAbi,
-    address: holeskyContractHash as `0x${string}`,
-    functionName: 'tokenURI',
-    args: [item.tokenId],
-  })
+
 
      return (     
        <>
@@ -41,7 +34,7 @@ function NFTMintedCard({ item }: Props) {
     alt={`${BigInt(item.tokenId)} NFT`}
       />
       <p  className='opacity-0'>
-      {data}
+      {item.tokenImageURI}
       </p>
 </CardItem>
 

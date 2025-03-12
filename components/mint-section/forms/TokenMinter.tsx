@@ -11,7 +11,29 @@ import { Inbox } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { holeskyAbi, holeskyContractHash } from "@/contract/abi/holeskyAbi";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 type Props = {}
+
+export const formNFTSchema = z.object({
+  name: z.string().min(3, { message: "Name must be at least 3 characters long." }).max(50, { message: "Name must be at most 50 characters long." }),
+  description: z.string().min(3, { message: "Description must be at least 3 characters long." }).max(100, { message: "Description must be at most 100 characters long." }),
+  image: z
+  .any()
+  .refine((file) => file?.size <= 10000000, `Max image size is 10MB.`)
+  .refine(
+    (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file?.type),
+    "Only .jpg, .jpeg, .png, .gif and .webp formats are supported."
+  ),
+  imagePreview: z.string(),
+  attributes: z.array(
+    z.object({
+      trait_type: z.string().min(3, { message: "Trait type must be at least 3 characters long." }).max(50, { message: "Trait type must be at most 50 characters long." }),
+      value: z.string().min(3, { message: "Value must be at least 3 characters long." }).max(10, { message: "Value must be at most 10 characters long." }),
+    })
+  ).max(5, { message: "Max 5 attributes." })
+});
 
 function TokenMinter({ }: Props) {
   const { isConnected, address } = useAccount();
@@ -21,22 +43,24 @@ function TokenMinter({ }: Props) {
       hash,
     });
 
+     
+
+
+
+    const form= useForm<z.infer<typeof formNFTSchema>>({
+      resolver: zodResolver(formNFTSchema),
+      
+    });
+
+
 
  
 
- 
-const formSchema = z.object({
-  name: z.string()
-})
 
 
     const inputRef = useRef<HTMLInputElement>(null);
-      const [imagePreview, setImagePreview] = useState<string | null>(null);
-      const [fileData, setFileData] = useState<File | null>(null);
-      const [attributes, setAttributes] = useState<Record<string, string>[]>();
-        const [name, setName] = useState<string>("");
-        const [description, setDescription] = useState<string>("");
-    const submitForm = async (e: React.MouseEvent<HTMLButtonElement>) => {
+   
+    const submitForm = async (data: z.infer<typeof formNFTSchema>, e: React.FormEvent) => {
       e.preventDefault();
     
       if (!isConnected) {
@@ -46,16 +70,16 @@ const formSchema = z.object({
     
       // Step 1: Upload Image to IPFS
       const formData = new FormData();
-      formData.append("file", fileData!);
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("keyValues", JSON.stringify({
-        "strength": "100",
-        "social": "52",
-        "health": "78",
-        "skills": "74",
-        "luck": "85"
-      }));
+      formData.append("file", data.image!);
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+
+      let keyValues:Record<string, string> = {};
+      data.attributes.forEach((attribute, index) => {
+        keyValues[attribute.trait_type]= attribute.value;
+        });
+
+      formData.append("keyValues", JSON.stringify(keyValues));
     
       const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
@@ -77,16 +101,10 @@ const formSchema = z.object({
     
       // Step 2: Upload Metadata JSON to IPFS
       const metadata = {
-        name: name,
-        description: description,
+        name: data.name,
+        description: data.description,
         image: imageURI, // Link to the image
-        attributes: [
-          { trait_type: "Strength", value: "100" },
-          { trait_type: "Social", value: "52" },
-          { trait_type: "Health", value: "78" },
-          { trait_type: "Skills", value: "74" },
-          { trait_type: "Luck", value: "85" }
-        ]
+        attributes: data.attributes
       };
     
       const metadataRequest = await fetch("/api/pinata/post", {
@@ -117,7 +135,7 @@ const formSchema = z.object({
         address: holeskyContractHash as `0x${string}`,
         functionName: "mintNFT",
         account: address,
-        args: [tokenURI, imageURI,name , description, ["strength", "social", "health", "skills", "luck"], ["100", "52", "78", "74", "85"]]
+        args: [tokenURI, imageURI, data.name , data.description, (data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string]), (data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string])]
       });
     };
     
@@ -138,17 +156,13 @@ const formSchema = z.object({
           return;
         }
     
-        setFileData(file);
-    
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = () => {
-          console.log(reader.result as string);
-          setImagePreview(reader.result as string);
+          form.setValue("imagePreview", reader.result as string);
         };
     
-    
-    
+      form.setValue("image", file);
     
       }
     
@@ -169,13 +183,61 @@ const formSchema = z.object({
         and remove your data from our servers.
                               </DialogDescription>           
               </DialogHeader>
-                
-                       
-  <div onClick={()=>inputRef.current?.click()} className="flex gap-1 flex-col">
+
+        <Form {...form}>
+<form onSubmit={form.handleSubmit(submitForm)}>
+
+  <FormField
+    control={form.control}
+    name="name"
+    render={() => (
+      <FormItem>
+        <FormLabel />
+        <FormControl>
+        <div className="flex gap-1 flex-col">
+                <p className='text-white font-semibold'>NFT Name</p>
+                <Input {...form.register("name")} name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
+              </div>
+        </FormControl>
+        <FormDescription />
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+
+<FormField
+    control={form.control}
+    name="description"
+    render={() => (
+      <FormItem>
+        <FormLabel />
+        <FormControl>
+        <div className="flex gap-1 flex-col">
+                <p className='text-white font-semibold'>NFT Description</p>
+                <Textarea className='resize-none h-20' {...form.register("description")} name="NFT-description" placeholder="Enter NFT Description" aria-label='NFT Description' />
+              </div>
+        </FormControl>
+        <FormDescription />
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+
+
+
+
+<FormField
+    control={form.control}
+    name="image"
+    render={() => (
+      <FormItem>
+        <FormLabel />
+        <FormControl>
+        <div onClick={()=>inputRef.current?.click()} className="flex gap-1 flex-col">
                 <p className='text-white font-semibold text-lg'>Source File</p>
                 <div className="max-w-96 cursor-pointer rounded-lg self-center w-full h-60 bg-gray-900 flex flex-col gap-2 items-center justify-evenly">
-                {imagePreview ? (
-                    <Image src={imagePreview} alt='' width={100} height={100} className='w-full h-full rounded-lg' />
+                {form.watch("imagePreview") ? (
+                    <Image src={form.watch("imagePreview")} alt='' width={100} height={100} className='w-full h-full rounded-lg' />
                   ) : (
               <>
                     <p className='text-white text-2xl font-semibold'>Drag and Drop</p>
@@ -183,32 +245,34 @@ const formSchema = z.object({
                           <p className='text-xs text-blue-400'>*Upload any image, mp3 or mp4 up to 10 MB</p>
                         </>      
                   )}
-                  <input onChange={onImageSelect} ref={inputRef} type="file" name="" className='hidden' id="" />
+                  <input {...form.register("image")} onChange={onImageSelect} ref={inputRef} type="file" name="" className='hidden' id="" />
               
 
                               </div>
                 </div>
-                {imagePreview && <p className='text-xs line-clamp-1   text-blue-400'>{imagePreview}</p>}
+        </FormControl>
+        <FormDescription />
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+             {form.watch("imagePreview") && <p className='text-xs line-clamp-1   text-blue-400'>{form.watch("imagePreview")}</p>}
 
 
-                <div className="flex gap-1 flex-col">
-                <p className='text-white font-semibold'>NFT Name</p>
-                <Input onChange={(e) => setName(e.target.value)} name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
-              </div>
-
-              <div className="flex gap-1 flex-col">
-                <p className='text-white font-semibold'>NFT Description</p>
-                <Textarea className='resize-none h-20' onChange={(e) => setDescription(e.target.value)} placeholder="Enter NFT Description" aria-label='NFT Description' />
-              </div>
+           
                           <DialogClose asChild>
 
-                <Button className="py-3" onClick={submitForm}>
+                <Button className="py-3" >
                   {isPending ? "Minting...." : 'Confirm'}
                 </Button>
                           </DialogClose>
 
 {isPending && <p className='text-white text-center'>Minting....</p>}  
                 {error && <p>{error.message}-{error.name}</p>}
+
+
+                </form>
+</Form>
              
                           </DialogContent>
          
@@ -217,3 +281,4 @@ const formSchema = z.object({
 }
 
 export default TokenMinter
+

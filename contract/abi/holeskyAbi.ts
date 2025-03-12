@@ -1,5 +1,5 @@
 
-export const holeskyContractHash:`0x${string}`= "0x1Aa950DcE9245355cF10726228735CaCfA915748";
+export const holeskyContractHash:`0x${string}`= "0x077B3c35b4A0d3BDdA60a08ca058f3e8081DeabF";
 
 export const holeskyAbi = [
    { "type": "constructor", "inputs": [{ "name": "_name", "type": "string", "internalType": "string" }, { "name": "_symbol", "type": "string", "internalType": "string" }, { "name": "_owner", "type": "address", "internalType": "address" }], "stateMutability": "nonpayable" }, 

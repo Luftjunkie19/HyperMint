@@ -1,4 +1,4 @@
-export const factoryContractAddr: `0x${string}` = "0xB4CA511992912Ff823867BF103058fc6F70cA0E3";  
+export const factoryContractAddr: `0x${string}` = "0xaDdca54C2465D55a835b9963c9d18D0A42d7f1D9";  
 
 export const factoryAbi = [{
     "type": "function", "name": "createCollection", "inputs": [{ "name": "name", "type": "string", "internalType": "string" },
