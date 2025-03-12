@@ -1,282 +1,451 @@
-"use client";
+"use client"
 import { z } from "zod"
-import Image from "next/image";
-import React, { useRef, useState } from 'react'
-import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '../../ui/dialog';
-import { DialogHeader, DialogClose } from '../../ui/dialog';
-import { Input } from '../../ui/input';
-import { Textarea } from '../../ui/textarea';
-import { toast } from "sonner";
-import { Inbox } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-import { holeskyAbi, holeskyContractHash } from "@/contract/abi/holeskyAbi";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-type Props = {}
+import Image from "next/image"
+import type React from "react"
+import { useRef, useState } from "react"
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { DialogHeader, DialogClose, DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
+import { Check, ChevronLeft, ChevronRight, Loader2, X } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { holeskyAbi, holeskyContractHash } from "@/contract/abi/holeskyAbi"
+import { Form } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { motion, AnimatePresence } from "framer-motion"
+import { Stepper } from "@/components/Stepper"
+
+// Import section components
+import { NFTBasicInfoSection } from "./sections/token-form/NftBasicInfoSection"
+import { NFTImageUploadSection } from "./sections/token-form/NftImageUploadSection"
+import { NFTTraitsSection } from "./sections/token-form/NftTraitsSection"
 
 export const formNFTSchema = z.object({
-  name: z.string().min(3, { message: "Name must be at least 3 characters long." }).max(50, { message: "Name must be at most 50 characters long." }),
-  description: z.string().min(3, { message: "Description must be at least 3 characters long." }).max(100, { message: "Description must be at most 100 characters long." }),
+  name: z
+    .string()
+    .min(3, { message: "Name must be at least 3 characters long." })
+    .max(50, { message: "Name must be at most 50 characters long." }),
+  description: z
+    .string()
+    .min(3, { message: "Description must be at least 3 characters long." })
+    .max(100, { message: "Description must be at most 100 characters long." }),
   image: z
-  .any()
-  .refine((file) => file?.size <= 10000000, `Max image size is 10MB.`)
-  .refine(
-    (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file?.type),
-    "Only .jpg, .jpeg, .png, .gif and .webp formats are supported."
-  ),
+    .any()
+    .refine((file) => file?.size <= 10000000, `Max image size is 10MB.`)
+    .refine(
+      (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file?.type),
+      "Only .jpg, .jpeg, .png, .gif and .webp formats are supported.",
+    ),
   imagePreview: z.string(),
-  attributes: z.array(
-    z.object({
-      trait_type: z.string().min(3, { message: "Trait type must be at least 3 characters long." }).max(50, { message: "Trait type must be at most 50 characters long." }),
-      value: z.string().min(3, { message: "Value must be at least 3 characters long." }).max(10, { message: "Value must be at most 10 characters long." }),
+  attributes: z
+    .array(
+      z.object({
+        trait_type: z
+          .string()
+          .min(3, { message: "Trait type must be at least 3 characters long." })
+          .max(50, { message: "Trait type must be at most 50 characters long." }),
+        value: z
+          .string()
+          .min(3, { message: "Value must be at least 3 characters long." })
+          .max(10, { message: "Value must be at most 10 characters long." }),
+      }),
+    )
+    .length(5, { message: "Must have exactly 5 attributes" }),
+})
+
+// Export the NFTFormValues type so it can be used in the section components
+export type NFTFormValues = z.infer<typeof formNFTSchema>
+
+function TokenMinter() {
+  const { isConnected, address } = useAccount()
+  const { data: hash, isPending, writeContract, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError,
+    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData
+
+  } = useWaitForTransactionReceipt({
+
+    hash,
+
+  })
+
+  const [step, setStep] = useState(0)
+  const steps = ["Data Entry", "Confirmation", "Transaction"]
+
+  const form = useForm<NFTFormValues>({
+    resolver: zodResolver(formNFTSchema),
+  })
+
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      toast.error("No files selected")
+      return
+    }
+
+    const file = e.target.files[0]
+
+    if (!file.type.includes("image")) {
+      toast.error("Only images are allowed")
+      return
+    }
+
+    if (file.size > 10000000) {
+      toast.error("File size is too large")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      form.setValue("imagePreview", reader.result as string)
+    }
+
+    form.setValue("image", file)
+  }
+
+  const submitForm = async (data: NFTFormValues) => {
+    if (!isConnected) {
+      toast.error("You have to connect your wallet first")
+      return
+    }
+
+    // Step 1: Upload Image to IPFS
+    const formData = new FormData()
+    formData.append("file", data.image!)
+    formData.append("name", data.name)
+    formData.append("description", data.description)
+
+    const keyValues: Record<string, string> = {}
+    data.attributes.forEach((attribute) => {
+      keyValues[attribute.trait_type] = attribute.value
     })
-  ).max(5, { message: "Max 5 attributes." })
-});
 
-function TokenMinter({ }: Props) {
-  const { isConnected, address } = useAccount();
-  const { data: hash, isPending, writeContract, error} = useWriteContract();
-  const { isLoading: isConfirming, isSuccess: isConfirmed  } =
-    useWaitForTransactionReceipt({
-      hash,
-    });
+    formData.append("keyValues", JSON.stringify(keyValues))
 
-     
-
-
-
-    const form= useForm<z.infer<typeof formNFTSchema>>({
-      resolver: zodResolver(formNFTSchema),
-      
-    });
-
-
-
- 
-
-
-
-    const inputRef = useRef<HTMLInputElement>(null);
-   
-    const submitForm = async (data: z.infer<typeof formNFTSchema>, e: React.FormEvent) => {
-      e.preventDefault();
-    
-      if (!isConnected) {
-        toast.error("You have to connect your wallet first");
-        return;
-      }
-    
-      // Step 1: Upload Image to IPFS
-      const formData = new FormData();
-      formData.append("file", data.image!);
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-
-      let keyValues:Record<string, string> = {};
-      data.attributes.forEach((attribute, index) => {
-        keyValues[attribute.trait_type]= attribute.value;
-        });
-
-      formData.append("keyValues", JSON.stringify(keyValues));
-    
+    try {
       const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: formData,
-      });
-    
-      const uploadResponse = await uploadRequest.json();
-      console.log("Upload Response:", uploadResponse);
-    
+      })
+
+      const uploadResponse = await uploadRequest.json()
+
       if (uploadResponse.error) {
-        toast.error("Error uploading image");
-        return;
+        toast.error("Error uploading image")
+        return
       }
-    
-      const imageCID = uploadResponse.IpfsHash; // The image CID
-      const imageURI =  `ipfs://${imageCID}`;
-    
-      console.log(imageURI);
-    
+
+      const imageCID = uploadResponse.IpfsHash
+      const imageURI = `ipfs://${imageCID}`
+
       // Step 2: Upload Metadata JSON to IPFS
       const metadata = {
         name: data.name,
         description: data.description,
-        image: imageURI, // Link to the image
-        attributes: data.attributes
-      };
-    
+        image: imageURI,
+        attributes: data.attributes,
+      }
+
       const metadataRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: JSON.stringify(metadata),
-        headers: { "Content-Type": "application/json" }
-      });
-    
-      const metadataResponse = await metadataRequest.json();
-      console.log("Metadata Upload Response:", metadataResponse);
-    
+        headers: { "Content-Type": "application/json" },
+      })
+
+      const metadataResponse = await metadataRequest.json()
+
       if (metadataResponse.error) {
-        toast.error("Error uploading metadata");
-        return;
+        toast.error("Error uploading metadata")
+        return
       }
-    
-      console.log(metadataResponse.IpfsHash, metadataResponse, `ipfs://${metadataResponse.IpfsHash}`);
-    
-      const tokenURI = `ipfs://${metadataResponse.IpfsHash}`; // Use JSON CID
-    
-      console.log(tokenURI, 'Token URI');
-      console.log(imageURI, 'Image URI');
-    
-    
+
+      const tokenURI = `ipfs://${metadataResponse.IpfsHash}`
+
       // Step 3: Mint NFT
       writeContract({
-       abi:holeskyAbi,
+        abi: holeskyAbi,
         address: holeskyContractHash as `0x${string}`,
         functionName: "mintNFT",
         account: address,
-        args: [tokenURI, imageURI, data.name , data.description, (data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string]), (data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string])]
-      });
-    };
-    
-      const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files) toast.error("No files selected");
-        const file = e.target!.files[0];
-    
-        console.log(file);
-    
-    
-        if (!file.type.includes("image")) {
-          toast.error("Only images and videos are allowed");
-          return;
-        }
-     
-        if (file.size > 10000000) { 
-          toast.error("File size is too large");
-          return;
-        }
-    
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => {
-          form.setValue("imagePreview", reader.result as string);
-        };
-    
-      form.setValue("image", file);
-    
-      }
-    
-    
+        args: [
+          tokenURI,
+          imageURI,
+          data.name,
+          data.description,
+          data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string],
+          data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string],
+        ],
+      })
 
+      setStep(2) // Move to transaction step
+    } catch (err) {
+      console.error(err)
+      toast.error("Error processing your request")
+    }
+  }
+
+  const nextStep = () => {
+    if (step === 0) {
+      form.trigger().then((isValid) => {
+        if (isValid) setStep(1)
+      })
+    } else {
+      setStep(Math.min(step + 1, steps.length - 1))
+    }
+  }
+
+  const prevStep = () => {
+    setStep(Math.max(step - 1, 0))
+  }
+
+  // Render the appropriate content based on the current step
+  const renderStepContent = () => {
+    switch (step) {
+      case 0:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <NFTBasicInfoSection form={form} />
+            <NFTImageUploadSection form={form} inputRef={inputRef} onImageSelect={onImageSelect} />
+            <NFTTraitsSection form={form} />
+          </motion.div>
+        )
+      case 1:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+            <h3 className="text-xl font-bold text-white">Confirm Your NFT Details</h3>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-white font-semibold mb-2">Preview</h4>
+                <div className="bg-gray-900 rounded-lg overflow-hidden h-60 flex items-center justify-center">
+                  {form.watch("imagePreview") ? (
+                    <Image
+                      src={form.watch("imagePreview") || "/placeholder.svg"}
+                      alt="NFT Preview"
+                      width={240}
+                      height={240}
+                      className="w-full h-full object-contain p-2"
+                    />
+                  ) : (
+                    <p className="text-gray-500">No image uploaded</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-white font-semibold">Name</h4>
+                  <p className="text-gray-300">{form.watch("name")}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold">Description</h4>
+                  <p className="text-gray-300">{form.watch("description")}</p>
+                </div>
+
+                <div>
+                  <h4 className="text-white font-semibold">Attributes</h4>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {form.watch("attributes")?.map((attr, idx) => (
+                      <div key={idx} className="bg-gray-800 p-2 rounded-md">
+                        <span className="text-blue-400 text-sm">{attr.trait_type}:</span>
+                        <span className="text-white ml-1">{attr.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-700 pt-4">
+              <p className="text-gray-400 text-sm">
+                By proceeding, you'll initiate a blockchain transaction to mint this NFT. This action cannot be undone
+                once confirmed.
+              </p>
+            </div>
+          </motion.div>
+        )
+      case 2:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6 py-4"
+          >
+            <h3 className="text-xl font-bold text-white text-center">Transaction Status</h3>
+
+            <div className="flex flex-col items-center justify-center py-8">
+              {isPending && (
+                <div className="text-center space-y-4">
+                  <div className="relative w-20 h-20 mx-auto">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 size={48} className="animate-spin text-blue-500" />
+                    </div>
+                  </div>
+                  <p className="text-white text-lg">Minting your NFT...</p>
+                  <p className="text-gray-400 text-sm">Please confirm the transaction in your wallet</p>
+                </div>
+              )}
+
+              {isConfirming && (
+                <div className="text-center space-y-4">
+                  <div className="relative w-20 h-20 mx-auto">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 size={48} className="animate-spin text-yellow-500" />
+                    </div>
+                  </div>
+                  <p className="text-white text-lg">Transaction Confirmed</p>
+                  <p className="text-gray-400 text-sm">Waiting for blockchain confirmation...</p>
+                </div>
+              )}
+
+              {isConfirmed && (
+                <div className="text-center space-y-4">
+                  <div className="relative w-20 h-20 mx-auto bg-green-900/20 rounded-full flex items-center justify-center">
+                    <Check size={48} className="text-green-500" />
+                  </div>
+                  <p className="text-white text-lg">Success!</p>
+                  <p className="text-gray-400 text-sm">Your NFT has been minted successfully</p>
+
+                  {hash && (
+                    <a
+                      href={`https://holeskyscan.io/tx/${hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline text-sm"
+                    >
+                      View on Explorer
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {error
+              && (
+                <div className="text-center space-y-4">
+                  <div className="relative w-20 h-20 mx-auto bg-red-900/20 rounded-full flex items-center justify-center">
+                    <X size={48} className="text-red-500" />
+                  </div>
+                  <p className="text-white text-lg">Transaction Failed</p>
+                  <p className="text-red-400 text-sm">{
+                    error?.message
+                  }
+                  
+
+                  </p>
+                </div>
+              )}
+
+              
+              {confirmError
+              && (
+                <div className="text-center space-y-4">
+                  <div className="relative w-20 h-20 mx-auto bg-red-900/20 rounded-full flex items-center justify-center">
+                    <X size={48} className="text-red-500" />
+                  </div>
+                  <p className="text-white text-lg">Transaction Failed</p>
+                  <p className="text-red-400 text-sm">{
+                   confirmError?.message
+                  }
+                  
+
+                  </p>
+                </div>
+              )}
+              
+            </div>
+          </motion.div>
+        )
+      default:
+        return null
+    }
+  }
 
   return (
-  <Dialog>
-                      <DialogTrigger className='self-start text-base bg-green-500 py-2 rounded-md transition-all max-w-32 w-full hover:bg-green-700 text-gray-900 hover:text-white'>
-              Mint Asset
-                      </DialogTrigger>
-                      
-  <DialogContent className='w-full max-w-xl bg-gray-700 z-[999999999]'>
-    <DialogHeader>
-      <DialogTitle className='text-white text-xl'>Mint Your NFT</DialogTitle>
-      <DialogDescription>
-        This action cannot be undone. This will permanently delete your account
-        and remove your data from our servers.
-                              </DialogDescription>           
-              </DialogHeader>
+    <Dialog>
+      <DialogTrigger className="self-start text-base bg-green-500 py-2 rounded-md transition-all max-w-32 w-full hover:bg-green-700 text-gray-900 hover:text-white">
+        Mint Asset
+      </DialogTrigger>
+
+      <DialogContent className="w-full max-w-xl bg-gray-700 z-[999999999]">
+        <DialogHeader>
+          <DialogTitle className="text-white text-xl">Mint Your NFT</DialogTitle>
+          <DialogDescription>
+            Create a unique NFT with custom properties and mint it to the blockchain
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Stepper */}
+        <Stepper steps={steps} activeStep={step} className="mb-6" />
 
         <Form {...form}>
-<form onSubmit={form.handleSubmit(submitForm)}>
+          <form onSubmit={form.handleSubmit(submitForm)} className="space-y-6">
+            <AnimatePresence mode="wait">{renderStepContent()}</AnimatePresence>
 
-  <FormField
-    control={form.control}
-    name="name"
-    render={() => (
-      <FormItem>
-        <FormLabel />
-        <FormControl>
-        <div className="flex gap-1 flex-col">
-                <p className='text-white font-semibold'>NFT Name</p>
-                <Input {...form.register("name")} name="NFT-name" type='text' placeholder="Enter NFT Name" aria-label='NFT Name' />
-              </div>
-        </FormControl>
-        <FormDescription />
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-
-<FormField
-    control={form.control}
-    name="description"
-    render={() => (
-      <FormItem>
-        <FormLabel />
-        <FormControl>
-        <div className="flex gap-1 flex-col">
-                <p className='text-white font-semibold'>NFT Description</p>
-                <Textarea className='resize-none h-20' {...form.register("description")} name="NFT-description" placeholder="Enter NFT Description" aria-label='NFT Description' />
-              </div>
-        </FormControl>
-        <FormDescription />
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-
-
-
-
-<FormField
-    control={form.control}
-    name="image"
-    render={() => (
-      <FormItem>
-        <FormLabel />
-        <FormControl>
-        <div onClick={()=>inputRef.current?.click()} className="flex gap-1 flex-col">
-                <p className='text-white font-semibold text-lg'>Source File</p>
-                <div className="max-w-96 cursor-pointer rounded-lg self-center w-full h-60 bg-gray-900 flex flex-col gap-2 items-center justify-evenly">
-                {form.watch("imagePreview") ? (
-                    <Image src={form.watch("imagePreview")} alt='' width={100} height={100} className='w-full h-full rounded-lg' />
-                  ) : (
-              <>
-                    <p className='text-white text-2xl font-semibold'>Drag and Drop</p>
-                  <Inbox size={48} color='white' />
-                          <p className='text-xs text-blue-400'>*Upload any image, mp3 or mp4 up to 10 MB</p>
-                        </>      
-                  )}
-                  <input {...form.register("image")} onChange={onImageSelect} ref={inputRef} type="file" name="" className='hidden' id="" />
-              
-
-                              </div>
-                </div>
-        </FormControl>
-        <FormDescription />
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-             {form.watch("imagePreview") && <p className='text-xs line-clamp-1   text-blue-400'>{form.watch("imagePreview")}</p>}
-
-
-           
-                          <DialogClose asChild>
-
-                <Button className="py-3" >
-                  {isPending ? "Minting...." : 'Confirm'}
+            <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2 pt-4 border-t border-gray-600">
+              {step > 0 && step < 2 && (
+                <Button type="button" variant="outline" onClick={prevStep} className="w-full sm:w-auto">
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Back
                 </Button>
-                          </DialogClose>
+              )}
 
-{isPending && <p className='text-white text-center'>Minting....</p>}  
-                {error && <p>{error.message}-{error.name}</p>}
+              {step === 0 && (
+                <Button type="button" onClick={nextStep} className="w-full sm:w-auto">
+                  Next
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
 
+              {step === 1 && (
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                  disabled={isPending || isConfirming}
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Minting...
+                    </>
+                  ) : (
+                    <>Mint NFT</>
+                  )}
+                </Button>
+              )}
 
-                </form>
-</Form>
-             
-                          </DialogContent>
-         
-</Dialog>
+              {step === 2 && isConfirmed && !error && (
+                <DialogClose asChild>
+                  <Button className="w-full sm:w-auto">Close</Button>
+                </DialogClose>
+              )}
+
+              {step === 2 && error && (
+                <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-full sm:w-auto">
+                  Try Again
+                </Button>
+              )}
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
