@@ -17,7 +17,7 @@ import { formNFTSchema, type NFTFormValues } from "./TokenMinter"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { useAccount, useDeployContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
 import { holeskyAbi, holeskyContractHash } from "@/contract/abi/holeskyAbi"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
@@ -31,6 +31,7 @@ import { NFTEditorSection } from "./sections/collection-form/NFTEditorSection"
 import { CollectionSummarySection } from "./sections/collection-form/CollectionSummarySection"
 import { TransactionStatusSection } from "./sections/collection-form/TransactionStatusSection"
 import { factoryAbi, factoryContractAddr } from "@/contract/abi/nftFactoryAbi"
+import { useStore } from "@/lib/zustandContext"
 
 // Define the collection schema
 const collectionFormSchema = z.object({
@@ -51,8 +52,10 @@ const collectionFormSchema = z.object({
 export type CollectionFormValues = z.infer<typeof collectionFormSchema>
 
 function CollectionMinter() {
+  const {insertNewContract}=useStore();
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
+
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
@@ -67,7 +70,6 @@ function CollectionMinter() {
     contractAddress?: string
   }>({})
 
-  const imageInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<CollectionFormValues>({
     resolver: zodResolver(collectionFormSchema),
@@ -238,24 +240,26 @@ function CollectionMinter() {
 
       const tokenURI = `ipfs://${metadataResponse.IpfsHash}`;
 
+
       writeContract({
-        abi: factoryAbi,
-        address: factoryContractAddr as `0x${string}`,
+        address:factoryContractAddr as `0x${string}`,
+        abi:factoryAbi,
+        account: address as `0x${string}`,
         functionName: "createCollection",
-        account: address,
         args: [
           data.name,
           data.symbol,
         {
-          tokenName: data.initialNft.name,
-          tokenURI,
-          tokenImageURI: imageURI,
-          description: data.initialNft.description,
+          tokenName:form.watch('initialNft.name'),
+          tokenURI:tokenURI,
+          tokenImageURI:imageURI,
+          description:form.watch('initialNft.description'),
         },
-        data.initialNft.attributes.map((item)=>item.trait_type),
-        data.initialNft.attributes.map((item)=>item.value)
-        ],
+        form.watch('initialNft.attributes').map((attribute) => (attribute.trait_type )),
+        form.watch('initialNft.attributes').map((attribute) => (attribute.value)), 
+        ]
       })
+    
 
       setStep(3) // Move to transaction step
     } catch (err: any) {

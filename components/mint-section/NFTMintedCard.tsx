@@ -4,8 +4,9 @@ import { BackgroundGradient } from '../ui/background-gradient';
 import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '../ui/3d-card';
 import TokenActionsModal from './TokenActionsModal';
-import { useAccount, useConnect, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { useAccount, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
 import { holeskyAbi } from '@/contract/abi/holeskyAbi';
+import { TransactionStatusSection } from './forms/sections/collection-form/TransactionStatusSection';
 type Props = {item: {
     tokenId: bigint;
     tokenURI: string;
@@ -54,6 +55,7 @@ function NFTMintedCard({ item, contractAddress}: Props) {
 
      return (     
        <div className='flex flex-col gap-2 max-xs items-center w-full'>
+
     
        {item &&
 
@@ -67,7 +69,7 @@ function NFTMintedCard({ item, contractAddress}: Props) {
     width="500"
     className="h-60 max-w-64 w-full object-cover rounded-lg group-hover/card:shadow-xl"
     alt={`${BigInt(item.tokenId)} NFT`}
-      />o
+      />
       <p  className='opacity-0'>
       {item.tokenImageURI}
       </p>

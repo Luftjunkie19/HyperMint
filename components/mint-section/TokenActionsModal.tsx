@@ -31,7 +31,7 @@ function TokenActionsModal({children, transferTokenToUser, burnToken, imgSrc, to
     <p>{tokenDescription}</p>
 </div>
 
-<Input value={targetAddress} className='text-white' onChange={(e)=>{setTargetAddress(e.target.value)}} placeholder='Target Address'/>
+<Input value={targetAddress} className='text-white' onChange={(e)=>{setTargetAddress(e.target.value)}} placeholder='Target Address (starting with 0x)'/>
 
    </div>
 

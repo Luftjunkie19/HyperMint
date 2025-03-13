@@ -9,6 +9,7 @@ import { holeskyAbi, holeskyContractHash } from '@/contract/abi/holeskyAbi';
 import NFTMintedCard from './NFTMintedCard';
 import CollectionMinter from './forms/CollectionMinter';
 import TokenMinter from './forms/TokenMinter';
+import CreatedCollections from './CreatedCollections';
 type Props = {
 
 }
@@ -65,6 +66,8 @@ function MintSection({}: Props) {
   {data.map((item, index) => <NFTMintedCard contractAddress={holeskyContractHash} key={index}  item={item} />)}
         </div>}
 
+
+<CreatedCollections/>
     </div>
 
     </div>
