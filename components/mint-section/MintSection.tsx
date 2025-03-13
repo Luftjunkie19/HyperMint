@@ -62,7 +62,7 @@ function MintSection({}: Props) {
      
 
 {address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
-  {data.map((item, index) => <NFTMintedCard key={index}  item={item} />)}
+  {data.map((item, index) => <NFTMintedCard contractAddress={holeskyContractHash} key={index}  item={item} />)}
         </div>}
 
     </div>

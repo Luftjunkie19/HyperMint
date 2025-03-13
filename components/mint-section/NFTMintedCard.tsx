@@ -3,6 +3,9 @@ import React from 'react'
 import { BackgroundGradient } from '../ui/background-gradient';
 import Image from 'next/image';
 import { CardBody, CardContainer, CardItem } from '../ui/3d-card';
+import TokenActionsModal from './TokenActionsModal';
+import { useAccount, useConnect, useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { holeskyAbi } from '@/contract/abi/holeskyAbi';
 type Props = {item: {
     tokenId: bigint;
     tokenURI: string;
@@ -12,13 +15,35 @@ type Props = {item: {
         trait_type: string;
         value: string;
     }[];
-} }
+},
+contractAddress:`0x${string}`,
 
-function NFTMintedCard({ item }: Props) {
 
+
+}
+
+function NFTMintedCard({ item, contractAddress}: Props) {
+  const {address}=useAccount();
+
+  const {writeContract, data, isPending, error}=useWriteContract({});
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError,
+    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData, failureReason, failureCount
+  } = useWaitForTransactionReceipt({hash:data});
+
+
+  const burnToken =  () => {
+    writeContract({
+      address: contractAddress, 
+      abi:holeskyAbi,
+      'account':address,
+      functionName:"burnToken",
+       args:[item.tokenId]
+      });
+  }
 
      return (     
-       <>
+       <div className='flex flex-col gap-2 max-xs items-center w-full'>
     
        {item &&
 
@@ -32,7 +57,7 @@ function NFTMintedCard({ item }: Props) {
     width="500"
     className="h-60 max-w-64 w-full object-cover rounded-lg group-hover/card:shadow-xl"
     alt={`${BigInt(item.tokenId)} NFT`}
-      />
+      />o
       <p  className='opacity-0'>
       {item.tokenImageURI}
       </p>
@@ -66,17 +91,19 @@ function NFTMintedCard({ item }: Props) {
 
 <div className="flex justify-between items-center cursor-pointer mt-12">
 
-<button  className='className="px-6 w-full cursor-pointer py-2 rounded-md text-base bg-[#58A6FF] dark:bg-white dark:text-black text-white font-bold"'>
-          Details
-        </button>
 </div>
 </CardBody>
 </BackgroundGradient>
        </CardContainer>
+
 }
+<TokenActionsModal burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenId.toString()} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
+<button  className='className="px-6 w-full max-w-xs cursor-pointer py-2 rounded-md text-base bg-[#58A6FF] dark:bg-white dark:text-black text-white font-bold"'>
+          Details
+        </button>
+</TokenActionsModal>
        
-</>
+</div>
   )
 }
-
 export default NFTMintedCard
