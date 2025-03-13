@@ -21,7 +21,7 @@ function CreatedCollections({}: Props) {
 
 
   return (
-    <div>{data && (data as `0x${string}`[]).length > 0 && address && data.map((item, index)=>(<CustomCollection key={index} contractAddr={item} senderAddress={address} />))}</div>
+    <div>{data as `0x${string}`[] && (data as `0x${string}`[]).length > 0 && address && (data as `0x${string}`[]).map((item, index)=>(<CustomCollection key={index} contractAddr={item} senderAddress={address} />))}</div>
   )
 }
 

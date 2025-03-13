@@ -22,7 +22,7 @@ function MintSection({}: Props) {
  abi:holeskyAbi,
     address: holeskyContractHash as `0x${string}`,
     functionName: 'getOwnersTokensAll',
-    args: [address]
+    args: [address as `0x${string}`]
   });
 
 

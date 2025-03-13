@@ -19,18 +19,20 @@ function CustomCollection({contractAddr, senderAddress}: Props) {
     });
 
 const results = useReadContracts({contracts:[
-    {
-        address: contractAddr,
-        abi: holeskyAbi,
-        functionName:'symbol',
-        args:[],
-    },
+
     {
         address: contractAddr,
         abi: holeskyAbi,
         functionName:'name',
         args:[],
     }
+    {
+        address: contractAddr,
+        abi: holeskyAbi,
+        functionName:'symbol',
+        args:[],
+    },
+  
 ]})
 
 
@@ -39,7 +41,7 @@ const results = useReadContracts({contracts:[
       <div className="flex items-center gap-4 flex-wrap">
       {
             results.data && results.data.map((item,index)=>(<p className={`${index === 0 ? "font-bold text-2xl" : "text-lg"}`} key={index}>
-                {index === 0 ? 'Collection Symbol: ' : ""}
+                {index === 0 ? 'Collection Name: ' : ""}
                 {item.result}</p>))
         }
       </div>
