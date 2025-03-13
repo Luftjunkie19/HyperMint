@@ -20,7 +20,7 @@ export function NFTBasicInfoSection({ form }: NFTBasicInfoSectionProps) {
           <FormItem>
             <FormLabel className="text-white font-semibold">NFT Name</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter NFT Name" />
+              <Input {...field} className="text-white" placeholder="Enter NFT Name" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -34,7 +34,7 @@ export function NFTBasicInfoSection({ form }: NFTBasicInfoSectionProps) {
           <FormItem>
             <FormLabel className="text-white font-semibold">NFT Description</FormLabel>
             <FormControl>
-              <Textarea className="resize-none h-20" {...field} placeholder="Enter NFT Description" />
+              <Textarea className="resize-none h-20" {...field} className="text-white" placeholder="Enter NFT Description" />
             </FormControl>
             <FormMessage />
           </FormItem>

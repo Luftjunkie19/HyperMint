@@ -42,25 +42,9 @@ const collectionFormSchema = z.object({
     .string()
     .min(3, { message: "Symbol must be at least 3 characters long." })
     .max(6, { message: "Symbol must be at most 6 characters long." }),
-  images: z
-    .array(
-      z.object({
-        file: z
-          .any()
-          .refine((file) => file?.size <= 10000000, `Max image size is 10MB.`)
-          .refine(
-            (file) => ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file?.type),
-            "Only .jpg, .jpeg, .png, .gif and .webp formats are supported.",
-          ),
-        preview: z.string(),
-      }),
-    )
-    .min(1, { message: "At least one image is required" })
-    .max(5, { message: "Maximum 5 images allowed" }),
-  nfts: z
-    .array(formNFTSchema)
-    .min(1, { message: "At least one NFT is required" })
-    .max(5, { message: "Maximum 5 NFTs allowed" }),
+
+  
+  initialNft: formNFTSchema
 })
 
 // Export the CollectionFormValues type so it can be used in the section components
@@ -90,60 +74,51 @@ function CollectionMinter() {
     defaultValues: {
       name: "",
       symbol: "",
-      images: [],
-      nfts: [],
     },
   })
 
   const nftForm = useForm<NFTFormValues>({
     resolver: zodResolver(formNFTSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      attributes: Array(5)
-        .fill(null)
-        .map(() => ({ trait_type: "", value: "" })),
-    },
   })
 
-  const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      toast.error("No files selected")
-      return
-    }
+  // const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (!e.target.files || e.target.files.length === 0) {
+  //     toast.error("No files selected")
+  //     return
+  //   }
 
-    const files = Array.from(e.target.files)
-    const currentImages = form.watch("images") || []
+  //   const files = Array.from(e.target.files[0])
 
-    if (currentImages.length + files.length > 5) {
-      toast.error("Maximum 5 images allowed")
-      return
-    }
 
-    const newImages = [...currentImages]
+  //   if (currentImages.length + files.length > 5) {
+  //     toast.error("Maximum 5 images allowed")
+  //     return
+  //   }
 
-    files.forEach((file) => {
-      if (!file.type.includes("image")) {
-        toast.error(`${file.name} is not an image`)
-        return
-      }
+  //   const newImages = [...currentImages]
 
-      if (file.size > 10000000) {
-        toast.error(`${file.name} is too large (max 10MB)`)
-        return
-      }
+  //   files.forEach((file) => {
+  //     if (!file.type.includes("image")) {
+  //       toast.error(`${file.name} is not an image`)
+  //       return
+  //     }
 
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => {
-        newImages.push({
-          file,
-          preview: reader.result as string,
-        })
-        form.setValue("images", newImages)
-      }
-    })
-  }
+  //     if (file.size > 10000000) {
+  //       toast.error(`${file.name} is too large (max 10MB)`)
+  //       return
+  //     }
+
+  //     const reader = new FileReader()
+  //     reader.readAsDataURL(file)
+  //     reader.onload = () => {
+  //       newImages.push({
+  //         file,
+  //         preview: reader.result as string,
+  //       })
+  //       form.setValue("images", newImages)
+  //     }
+  //   })
+  // }
 
   const removeImage = (index: number) => {
     const images = form.watch("images")
@@ -297,54 +272,6 @@ function CollectionMinter() {
         }),
       )
 
-      // Upload collection images
-      const collectionImagesURIs = await Promise.all(
-        data.images.map(async (image, index) => {
-          const formData = new FormData()
-          formData.append("file", image.file)
-
-          const uploadRequest = await fetch("/api/pinata/post", {
-            method: "POST",
-            body: formData,
-          })
-
-          const uploadResponse = await uploadRequest.json()
-
-          if (uploadResponse.error) {
-            throw new Error(`Error uploading collection image ${index + 1}`)
-          }
-
-          return `ipfs://${uploadResponse.IpfsHash}`
-        }),
-      )
-
-      // Upload collection metadata
-      const collectionMetadata = {
-        name: data.name,
-        symbol: data.symbol,
-        images: collectionImagesURIs,
-        nfts: uploadedNfts.map((nft) => ({
-          name: nft.name,
-          description: nft.description,
-          imageURI: nft.imageURI,
-          tokenURI: nft.tokenURI,
-          attributes: nft.attributes,
-        })),
-      }
-
-      const collectionMetadataRequest = await fetch("/api/pinata/post", {
-        method: "POST",
-        body: JSON.stringify(collectionMetadata),
-        headers: { "Content-Type": "application/json" },
-      })
-
-      const collectionMetadataResponse = await collectionMetadataRequest.json()
-
-      if (collectionMetadataResponse.error) {
-        throw new Error("Error uploading collection metadata")
-      }
-
-      const collectionURI = `ipfs://${collectionMetadataResponse.IpfsHash}`
 
       // Deploy collection contract
       // writeContract({
@@ -549,7 +476,7 @@ function CollectionMinter() {
                 </Button>
               )}
 
-              {step < 2 && (
+              {step >= 0 && step < 2 && (
                 <Button type="button" onClick={nextStep} className="w-full sm:w-auto">
                   Next
                   <ChevronRight className="ml-2 h-4 w-4" />

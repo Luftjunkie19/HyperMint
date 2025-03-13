@@ -19,17 +19,17 @@ import { Stepper } from "@/components/Stepper"
 // Import section components
 import { NFTBasicInfoSection } from "./sections/token-form/NftBasicInfoSection"
 import { NFTImageUploadSection } from "./sections/token-form/NftImageUploadSection"
-import { NFTTraitsSection } from "./sections/token-form/NftTraitsSection"
+import { NftTraitsSection } from "./sections/token-form/NftTraitsSection"
 
 export const formNFTSchema = z.object({
   name: z
     .string()
     .min(3, { message: "Name must be at least 3 characters long." })
-    .max(50, { message: "Name must be at most 50 characters long." }),
+    .max(25, { message: "Name must be at most 25 characters long." }),
   description: z
     .string()
     .min(3, { message: "Description must be at least 3 characters long." })
-    .max(100, { message: "Description must be at most 100 characters long." }),
+    .max(300, { message: "Description must be at most 300 characters long." }),
   image: z
     .any()
     .refine((file) => file?.size <= 10000000, `Max image size is 10MB.`)
@@ -43,12 +43,10 @@ export const formNFTSchema = z.object({
       z.object({
         trait_type: z
           .string()
-          .min(3, { message: "Trait type must be at least 3 characters long." })
-          .max(50, { message: "Trait type must be at most 50 characters long." }),
-        value: z
-          .string()
-          .min(3, { message: "Value must be at least 3 characters long." })
-          .max(10, { message: "Value must be at most 10 characters long." }),
+          .min(2, { message: "Trait type must be at least 2 characters long." })
+          .max(16, { message: "Trait type must be at most 25 characters long." }),
+        value:  z
+          .string().min(1, { message: "Value must be at least 1 characters long." }).max(24, { message: "Value must be at most 24 characters long." }),
       }),
     )
     .length(5, { message: "Must have exactly 5 attributes" }),
@@ -61,7 +59,7 @@ function TokenMinter() {
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError,
-    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData
+    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData, failureReason, failureCount
 
   } = useWaitForTransactionReceipt({
 
@@ -70,10 +68,13 @@ function TokenMinter() {
   })
 
   const [step, setStep] = useState(0)
-  const steps = ["Data Entry", "Confirmation", "Transaction"]
+  const steps = ["Data Entry", "File Upload", "NFT-Attributes",  "Confirmation", "Transaction"]
 
   const form = useForm<NFTFormValues>({
     resolver: zodResolver(formNFTSchema),
+    defaultValues: {
+      'attributes': Array(5).fill(null, 0, 5).map(() => ({ trait_type: "", value: "" })),
+    }
   })
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -106,6 +107,7 @@ function TokenMinter() {
   }
 
   const submitForm = async (data: NFTFormValues) => {
+    console.log(data);
     if (!isConnected) {
       toast.error("You have to connect your wallet first")
       return
@@ -170,6 +172,7 @@ function TokenMinter() {
         functionName: "mintNFT",
         account: address,
         args: [
+          address as `0x${string}`,
           tokenURI,
           imageURI,
           data.name,
@@ -179,18 +182,25 @@ function TokenMinter() {
         ],
       })
 
-      setStep(2) // Move to transaction step
+      setStep(4) // Move to transaction step
     } catch (err) {
-      console.error(err)
+      console.log(err)
       toast.error("Error processing your request")
     }
   }
 
   const nextStep = () => {
     if (step === 0) {
-      form.trigger().then((isValid) => {
-        if (isValid) setStep(1)
-      })
+
+  Promise.all([
+        form.trigger("name"),
+      form.trigger("description"),
+  ])
+      .then((results) => {
+        if (!results.find((item)=>!item)) setStep(1)
+      });
+
+      
     } else {
       setStep(Math.min(step + 1, steps.length - 1))
     }
@@ -213,11 +223,37 @@ function TokenMinter() {
             className="space-y-6"
           >
             <NFTBasicInfoSection form={form} />
-            <NFTImageUploadSection form={form} inputRef={inputRef} onImageSelect={onImageSelect} />
-            <NFTTraitsSection form={form} />
+           
           </motion.div>
         )
       case 1:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+
+            <NFTImageUploadSection form={form} inputRef={inputRef} onImageSelect={onImageSelect} />
+          </motion.div>
+       
+        )
+      case 2: return (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
+
+        <NftTraitsSection form={form} />    
+          </motion.div>
+      )
+      
+      case 3:
         return (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -246,7 +282,7 @@ function TokenMinter() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-4 self-end">
                 <div>
                   <h4 className="text-white font-semibold">Name</h4>
                   <p className="text-gray-300">{form.watch("name")}</p>
@@ -254,22 +290,22 @@ function TokenMinter() {
 
                 <div>
                   <h4 className="text-white font-semibold">Description</h4>
-                  <p className="text-gray-300">{form.watch("description")}</p>
+                  <p className="text-gray-300 line-clamp-1 hover:text-blue-500 transition-all cursor-pointer">{form.watch("description")}</p>
                 </div>
 
-                <div>
+              </div>
+            </div>
+                <div className="">
                   <h4 className="text-white font-semibold">Attributes</h4>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="grid grid-cols-3 gap-2 mt-2 max-w-  w-full">
                     {form.watch("attributes")?.map((attr, idx) => (
-                      <div key={idx} className="bg-gray-800 p-2 rounded-md">
+                      <div key={idx} className="bg-gray-800 p-2 flex items-center justify-between rounded-md">
                         <span className="text-blue-400 text-sm">{attr.trait_type}:</span>
-                        <span className="text-white ml-1">{attr.value}</span>
+                        <span className="text-white font-semibold">{attr.value}</span>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
 
             <div className="border-t border-gray-700 pt-4">
               <p className="text-gray-400 text-sm">
@@ -279,7 +315,7 @@ function TokenMinter() {
             </div>
           </motion.div>
         )
-      case 2:
+      case 4:
         return (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -291,7 +327,7 @@ function TokenMinter() {
             <h3 className="text-xl font-bold text-white text-center">Transaction Status</h3>
 
             <div className="flex flex-col items-center justify-center py-8">
-              {isPending && (
+              {isPending && !isConfirming && (
                 <div className="text-center space-y-4">
                   <div className="relative w-20 h-20 mx-auto">
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -303,7 +339,7 @@ function TokenMinter() {
                 </div>
               )}
 
-              {isConfirming && (
+              {isConfirming && !isConfirmed && (
                 <div className="text-center space-y-4">
                   <div className="relative w-20 h-20 mx-auto">
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -343,8 +379,9 @@ function TokenMinter() {
                     <X size={48} className="text-red-500" />
                   </div>
                   <p className="text-white text-lg">Transaction Failed</p>
-                  <p className="text-red-400 text-sm">{
-                    error?.message
+                  
+                  <p className="text-red-400 text-sm">Simple Error{
+                    error.name
                   }
                   
 
@@ -360,10 +397,18 @@ function TokenMinter() {
                     <X size={48} className="text-red-500" />
                   </div>
                   <p className="text-white text-lg">Transaction Failed</p>
-                  <p className="text-red-400 text-sm">{
-                   confirmError?.message
+                  <p className="text-red-400 text-sm ">{" "} {
+                   confirmError.name
                   }
                   
+
+                  </p>
+
+                    <p className="text-red-400 text-sm ">ConfirmError: {" "} {
+                   JSON.stringify(confirmError.cause)
+                  }
+                  <p>{JSON.stringify({...failureReason, failureCount})}</p>
+                   
 
                   </p>
                 </div>
@@ -399,24 +444,24 @@ function TokenMinter() {
             <AnimatePresence mode="wait">{renderStepContent()}</AnimatePresence>
 
             <DialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-2 pt-4 border-t border-gray-600">
-              {step > 0 && step < 2 && (
+              {step > 0 && step < 3 && (
                 <Button type="button" variant="outline" onClick={prevStep} className="w-full sm:w-auto">
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   Back
                 </Button>
               )}
 
-              {step === 0 && (
+              {step >= 0 && step < 4 && (
                 <Button type="button" onClick={nextStep} className="w-full sm:w-auto">
                   Next
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               )}
 
-              {step === 1 && (
+              {step === 3 && (
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                  className="w-full self-end  sm:w-auto bg-green-600 hover:bg-green-700"
                   disabled={isPending || isConfirming}
                 >
                   {isPending ? (
@@ -430,13 +475,13 @@ function TokenMinter() {
                 </Button>
               )}
 
-              {step === 2 && isConfirmed && !error && (
+              {step === 3 && isConfirmed && !error && (
                 <DialogClose asChild>
                   <Button className="w-full sm:w-auto">Close</Button>
                 </DialogClose>
               )}
 
-              {step === 2 && error && (
+              {step === 3 && error && (
                 <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-full sm:w-auto">
                   Try Again
                 </Button>

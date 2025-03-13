@@ -21,7 +21,7 @@ export function NftTraitsSection({ form }: NftTraitsSectionProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input {...field} placeholder={`Trait ${index + 1} Type`} className="bg-gray-900 border-gray-700" />
+                    <Input {...field} placeholder={`Trait ${index + 1} Type`} className="bg-gray-900 text-white border-gray-700" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -36,7 +36,7 @@ export function NftTraitsSection({ form }: NftTraitsSectionProps) {
                     <Input
                       {...field}
                       placeholder={`Trait ${index + 1} Value`}
-                      className="bg-gray-900 border-gray-700"
+                      className="bg-gray-900 text-white border-gray-700"
                     />
                   </FormControl>
                   <FormMessage />
