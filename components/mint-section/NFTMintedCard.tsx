@@ -32,6 +32,16 @@ function NFTMintedCard({ item, contractAddress}: Props) {
   } = useWaitForTransactionReceipt({hash:data});
 
 
+  const transferTokenToUser=(targetAddress:`0x${string}`)=>{
+    writeContract({
+      address: contractAddress, 
+      abi:holeskyAbi,
+      'account':address,
+      functionName:"safeTransferFrom",
+       args:[address as `0x${string}`,targetAddress, item.tokenId]
+      });
+  }
+
   const burnToken =  () => {
     writeContract({
       address: contractAddress, 
@@ -97,7 +107,7 @@ function NFTMintedCard({ item, contractAddress}: Props) {
        </CardContainer>
 
 }
-<TokenActionsModal burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenId.toString()} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
+<TokenActionsModal transferTokenToUser={transferTokenToUser} burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenId.toString()} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
 <button  className='className="px-6 w-full max-w-xs cursor-pointer py-2 rounded-md text-base bg-[#58A6FF] dark:bg-white dark:text-black text-white font-bold"'>
           Details
         </button>

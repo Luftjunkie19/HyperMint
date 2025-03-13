@@ -4,13 +4,15 @@ import { ArrowRightLeftIcon, EllipsisIcon, FlameIcon } from 'lucide-react'
 import { Button } from '../ui/button'
 import { DialogPortal, DialogTrigger } from '@radix-ui/react-dialog'
 import Image from 'next/image'
+import { Input } from '../ui/input'
 
 type Props = {children:React.ReactNode, 
     burnToken:()=>void,
+    transferTokenToUser:(targetAddress:`0x${string}`)=>void,
     contractAddress:`0x${string}`, imgSrc:string, tokenId:BigInt, tokenURI:string, tokenName:string, tokenDescription:string}
 
-function TokenActionsModal({children, burnToken, imgSrc, tokenId, tokenURI, contractAddress, tokenName, tokenDescription}: Props) {
- 
+function TokenActionsModal({children, transferTokenToUser, burnToken, imgSrc, tokenId, tokenURI, contractAddress, tokenName, tokenDescription}: Props) {
+ const [targetAddress, setTargetAddress] = React.useState<string>('');
     
  
     return (
@@ -29,10 +31,16 @@ function TokenActionsModal({children, burnToken, imgSrc, tokenId, tokenURI, cont
     <p>{tokenDescription}</p>
 </div>
 
+<Input value={targetAddress} className='text-white' onChange={(e)=>{setTargetAddress(e.target.value)}} placeholder='Target Address'/>
+
    </div>
 
         <DialogFooter className=''>
-            <Button className='flex bg-blue-500 transition-all  items-center gap-2'>
+            <Button onClick={()=>{
+                if(targetAddress.slice(0,2) === "0x" && targetAddress.length > 10){
+                    transferTokenToUser(targetAddress as `0x${string}`);
+                }
+            }} className='flex bg-blue-500 transition-all  items-center gap-2'>
                 <ArrowRightLeftIcon />
                 <span>Transfer</span>
             
