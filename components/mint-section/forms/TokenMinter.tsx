@@ -428,7 +428,7 @@ function TokenMinter() {
         Mint Asset
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-xl bg-gray-700 z-[999999999]">
+      <DialogContent className="w-full max-w-xl h-[95vh]  overflow-y-auto bg-gray-700 z-[999999999]">
         <DialogHeader>
           <DialogTitle className="text-white text-xl">Mint Your NFT</DialogTitle>
           <DialogDescription>

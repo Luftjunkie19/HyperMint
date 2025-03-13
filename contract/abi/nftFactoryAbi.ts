@@ -4,7 +4,8 @@ export const factoryAbi = [
     {"type":"function","name":"createCollection","inputs":[{"name":"name","type":"string","internalType":"string"},
         { "name": "symbol", "type": "string", "internalType": "string" },
         {
-            "name": "token", "type": "tuple", "internalType": "struct NFTFactory.Token", "components": [{ "name": "tokenName", "type": "string", "internalType": "string" },
+            "name": "token", "type": "tuple", "internalType": "struct NFTFactory.Token", "components": [
+            { "name": "tokenName", "type": "string", "internalType": "string" },
             {"name":"tokenURI","type":"string","internalType":"string"},
             {"name":"tokenImageURI","type":"string","internalType":"string"},
             {"name":"description","type":"string","internalType":"string"}]},

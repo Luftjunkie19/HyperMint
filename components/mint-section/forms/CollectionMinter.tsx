@@ -26,11 +26,11 @@ import { Stepper } from "@/components/Stepper"
 
 // Import section components
 import { CollectionBasicInfoSection } from "./sections/collection-form/CollectionBasicInfoSection"
-import { CollectionImagesSection } from "./sections/collection-form/CollectionImagesSection"
 import { NFTListSection } from "./sections/collection-form/NFTListSection"
 import { NFTEditorSection } from "./sections/collection-form/NFTEditorSection"
 import { CollectionSummarySection } from "./sections/collection-form/CollectionSummarySection"
 import { TransactionStatusSection } from "./sections/collection-form/TransactionStatusSection"
+import { factoryAbi, factoryContractAddr } from "@/contract/abi/nftFactoryAbi"
 
 // Define the collection schema
 const collectionFormSchema = z.object({
@@ -74,57 +74,41 @@ function CollectionMinter() {
     defaultValues: {
       name: "",
       symbol: "",
+      initialNft:{
+        'name': '',
+        'description': '',
+        'image': '',
+        'imagePreview': '',
+        'attributes': [
+          { 'trait_type': '', 'value': '' },
+          { 'trait_type': '', 'value': '' },
+          { 'trait_type': '', 'value': '' },
+          { 'trait_type': '', 'value': '' },
+          { 'trait_type': '', 'value': '' }
+        ]
+      }
     },
   })
 
   const nftForm = useForm<NFTFormValues>({
     resolver: zodResolver(formNFTSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      image: "",
+      imagePreview: "",
+      attributes: [
+        { trait_type: "", value: "" },
+        { trait_type: "", value: "" },
+        { trait_type: "", value: "" },
+        { trait_type: "", value: "" },
+        { trait_type: "", value: "" }
+        ]
+    }
   })
 
-  // const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (!e.target.files || e.target.files.length === 0) {
-  //     toast.error("No files selected")
-  //     return
-  //   }
-
-  //   const files = Array.from(e.target.files[0])
-
-
-  //   if (currentImages.length + files.length > 5) {
-  //     toast.error("Maximum 5 images allowed")
-  //     return
-  //   }
-
-  //   const newImages = [...currentImages]
-
-  //   files.forEach((file) => {
-  //     if (!file.type.includes("image")) {
-  //       toast.error(`${file.name} is not an image`)
-  //       return
-  //     }
-
-  //     if (file.size > 10000000) {
-  //       toast.error(`${file.name} is too large (max 10MB)`)
-  //       return
-  //     }
-
-  //     const reader = new FileReader()
-  //     reader.readAsDataURL(file)
-  //     reader.onload = () => {
-  //       newImages.push({
-  //         file,
-  //         preview: reader.result as string,
-  //       })
-  //       form.setValue("images", newImages)
-  //     }
-  //   })
-  // }
-
   const removeImage = (index: number) => {
-    const images = form.watch("images")
-    const newImages = [...images]
-    newImages.splice(index, 1)
-    form.setValue("images", newImages)
+    const image = form.watch('initialNft.image');
   }
 
   const onNftImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,23 +140,15 @@ function CollectionMinter() {
 
   const addNft = () => {
     nftForm.handleSubmit((data) => {
-      const currentNfts = form.watch("nfts") || []
+      const currentNft = form.watch("initialNft") || []
 
-      if (currentNfts.length >= 5) {
-        toast.error("Maximum 5 NFTs allowed")
+      if (currentNft.attributes.length < 5) {
+        toast.error("5 Attributes are required !");
         return
       }
 
-      if (editingNftIndex !== null) {
-        // Update existing NFT
-        const newNfts = [...currentNfts]
-        newNfts[editingNftIndex] = data
-        form.setValue("nfts", newNfts)
-        setEditingNftIndex(null)
-      } else {
-        // Add new NFT
-        form.setValue("nfts", [...currentNfts, data])
-      }
+
+      form.setValue("initialNft", {...nftForm.getValues()});
 
       // Reset NFT form
       nftForm.reset({
@@ -181,7 +157,7 @@ function CollectionMinter() {
         attributes: Array(5)
           .fill(null)
           .map(() => ({ trait_type: "", value: "" })),
-      })
+      });
 
       toast.success(editingNftIndex !== null ? "NFT updated" : "NFT added")
       setActiveNftTab("list")
@@ -189,19 +165,20 @@ function CollectionMinter() {
   }
 
   const editNft = (index: number) => {
-    const nfts = form.watch("nfts")
-    const nftToEdit = nfts[index]
-
-    nftForm.reset(nftToEdit)
+    const nft = form.watch("initialNft");
+  
+    
+    nftForm.setValue("name", nft.name);
+    nftForm.setValue("description", nft.description);
+    nftForm.setValue("image", nft.image);
+    nftForm.setValue("imagePreview", nft.imagePreview);
     setEditingNftIndex(index)
     setActiveNftTab("editor")
   }
 
   const removeNft = (index: number) => {
-    const nfts = form.watch("nfts")
-    const newNfts = [...nfts]
-    newNfts.splice(index, 1)
-    form.setValue("nfts", newNfts)
+ 
+    form.resetField('initialNft')
     toast.success("NFT removed")
   }
 
@@ -213,85 +190,72 @@ function CollectionMinter() {
 
     try {
       // Step 1: Upload all images to IPFS
-      const uploadedNfts = await Promise.all(
-        data.nfts.map(async (nft, index) => {
-          // Upload NFT image
-          const formData = new FormData()
-          formData.append("file", nft.image!)
-          formData.append("name", nft.name)
-          formData.append("description", nft.description)
+      const formData = new FormData()
+      formData.append("file", data.initialNft.image!)
+      formData.append("name", data.initialNft.name)
+      formData.append("description", data.initialNft.description)
 
-          const keyValues: Record<string, string> = {}
-          nft.attributes.forEach((attribute) => {
-            keyValues[attribute.trait_type] = attribute.value
-          })
+      const keyValues: Record<string, string> = {}
+      data.initialNft.attributes.forEach((attribute) => {
+        keyValues[attribute.trait_type] = attribute.value
+      })
 
-          formData.append("keyValues", JSON.stringify(keyValues))
+      formData.append("keyValues", JSON.stringify(keyValues))
 
-          const uploadRequest = await fetch("/api/pinata/post", {
-            method: "POST",
-            body: formData,
-          })
+      const uploadRequest = await fetch("/api/pinata/post", {
+        method: "POST",
+        body: formData,
+      })
 
-          const uploadResponse = await uploadRequest.json()
+      const uploadResponse = await uploadRequest.json()
 
-          if (uploadResponse.error) {
-            throw new Error(`Error uploading image for NFT ${index + 1}`)
-          }
+      if (uploadResponse.error) {
+        throw new Error(`Error uploading image for NFT `)
+      }
 
-          const imageCID = uploadResponse.IpfsHash
-          const imageURI = `ipfs://${imageCID}`
+      const imageCID = uploadResponse.IpfsHash
+      const imageURI = `ipfs://${imageCID}`
 
-          // Upload metadata JSON
-          const metadata = {
-            name: nft.name,
-            description: nft.description,
-            image: imageURI,
-            attributes: nft.attributes,
-          }
+      // Upload metadata JSON
+      const metadata = {
+        name: data.initialNft.name,
+        description: data.initialNft.description,
+        image: imageURI,
+        attributes: data.initialNft.attributes,
+      }
 
-          const metadataRequest = await fetch("/api/pinata/post", {
-            method: "POST",
-            body: JSON.stringify(metadata),
-            headers: { "Content-Type": "application/json" },
-          })
+      const metadataRequest = await fetch("/api/pinata/post", {
+        method: "POST",
+        body: JSON.stringify(metadata),
+        headers: { "Content-Type": "application/json" },
+      });
 
-          const metadataResponse = await metadataRequest.json()
+      const metadataResponse = await metadataRequest.json();
 
-          if (metadataResponse.error) {
-            throw new Error(`Error uploading metadata for NFT ${index + 1}`)
-          }
+      if (metadataResponse.error) {
+        throw new Error(`Error uploading metadata for NFT`);
+      }
 
-          const tokenURI = `ipfs://${metadataResponse.IpfsHash}`
+      const tokenURI = `ipfs://${metadataResponse.IpfsHash}`;
 
-          return {
-            ...nft,
-            imageURI,
-            tokenURI,
-          }
-        }),
-      )
-
-
-      // Deploy collection contract
-      // writeContract({
-      //   abi: holeskyAbi,
-      //   address: holeskyContractHash as `0x${string}`,
-      //   functionName: "createCollection",
-      //   account: address,
-      //   args: [
-      //     data.name,
-      //     data.symbol,
-      //     data.description,
-      //     collectionURI,
-      //     uploadedNfts.map((nft) => nft.tokenURI),
-      //     uploadedNfts.map((nft) => nft.imageURI),
-      //     uploadedNfts.map((nft) => nft.name),
-      //     uploadedNfts.map((nft) => nft.description),
-      //     uploadedNfts.map((nft) => nft.attributes.map((attr) => attr.trait_type)),
-      //     uploadedNfts.map((nft) => nft.attributes.map((attr) => attr.value)),
-      //   ],
-      // })
+      writeContract({
+        abi: factoryAbi,
+        address: factoryContractAddr as `0x${string}`,
+        functionName: "createCollection",
+        account: address,
+        args: [
+          data.name,
+          data.symbol,
+        {
+          tokenName: data.initialNft.name,
+          tokenURI,
+          tokenImageURI: imageURI,
+          description: data.initialNft.description,
+        },
+        data.initialNft.attributes.map((item)=>item.trait_type),
+        data.initialNft.attributes.map((item)=>item.value)
+        ],
+      })
 
       setStep(3) // Move to transaction step
     } catch (err: any) {
@@ -302,11 +266,11 @@ function CollectionMinter() {
 
   const nextStep = () => {
     if (step === 0) {
-      form.trigger(["name", "symbol", "images"]).then((isValid) => {
+      form.trigger(["name", "symbol"]).then((isValid) => {
         if (isValid) setStep(1)
       })
     } else if (step === 1) {
-      form.trigger("nfts").then((isValid) => {
+      form.trigger("initialNft").then((isValid) => {
         if (isValid) setStep(2)
       })
     } else {
@@ -346,12 +310,6 @@ function CollectionMinter() {
             className="space-y-6"
           >
             <CollectionBasicInfoSection form={form} />
-            <CollectionImagesSection
-              form={form}
-              imageInputRef={imageInputRef}
-              onImageSelect={onImageSelect}
-              removeImage={removeImage}
-            />
           </motion.div>
         )
       case 1:
@@ -366,7 +324,7 @@ function CollectionMinter() {
             <div className="flex items-center justify-between">
               <h3 className="text-white font-semibold text-lg">NFT Creation</h3>
               <div className="bg-gray-800 px-3 py-1 rounded-full text-sm text-white">
-                {form.watch("nfts")?.length || 0}/5 NFTs
+        Initial Token Creation !
               </div>
             </div>
 
@@ -445,7 +403,7 @@ function CollectionMinter() {
         Mint Collection
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-3xl bg-gray-700 z-[999999999]">
+      <DialogContent className="w-full max-w-3xl bg-gray-700 h-[95vh]  overflow-y-auto z-[999999999]">
         <DialogHeader>
           <DialogTitle className="text-white text-xl">Create NFT Collection</DialogTitle>
           <DialogDescription>Deploy a new NFT collection with multiple assets to the blockchain</DialogDescription>
