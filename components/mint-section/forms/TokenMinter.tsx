@@ -165,12 +165,19 @@ function TokenMinter() {
 
       const tokenURI = `ipfs://${metadataResponse.IpfsHash}`
 
+      console.log([address as `0x${string}`,
+          tokenURI,
+          imageURI,
+          data.name,
+          data.description,
+          data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string],
+          data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string]])
       // Step 3: Mint NFT
       writeContract({
         abi: holeskyAbi,
         address: holeskyContractHash as `0x${string}`,
         functionName: "mintNFT",
-        account: address,
+        account: address as `0x${string}`,
         args: [
           address as `0x${string}`,
           tokenURI,
@@ -380,7 +387,7 @@ function TokenMinter() {
                   </div>
                   <p className="text-white text-lg">Transaction Failed</p>
                   
-                  <p className="text-red-400 text-sm">Simple Error{
+                  <p className="text-red-400 text-sm">Simple Error: {
                     error.name
                   }
                   
@@ -405,9 +412,9 @@ function TokenMinter() {
                   </p>
 
                     <p className="text-red-400 text-sm ">ConfirmError: {" "} {
-                   JSON.stringify(confirmError.cause)
+                   JSON.stringify({details: confirmError.cause?.details, version: confirmError.cause?.version,  shortMessage: confirmError.cause?.shortMessage, failureCount})  
                   }
-                  <p>{JSON.stringify({...failureReason, failureCount})}</p>
+                  <p>{JSON.stringify({failure:failureReason?.cause.shortMessage, failureCount})}</p>
                    
 
                   </p>

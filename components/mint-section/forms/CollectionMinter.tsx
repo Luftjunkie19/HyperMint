@@ -407,7 +407,7 @@ function CollectionMinter() {
         Mint Collection
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-3xl bg-gray-700 h-[95vh]  overflow-y-auto z-[999999999]">
+      <DialogContent className="w-full max-w-3xl bg-gray-700 max-h-[36rem] h-full  overflow-y-auto z-[999999999]">
         <DialogHeader>
           <DialogTitle className="text-white text-xl">Create NFT Collection</DialogTitle>
           <DialogDescription>Deploy a new NFT collection with multiple assets to the blockchain</DialogDescription>
