@@ -21,7 +21,7 @@ function TokenActionsModal({children, transferTokenToUser, burnToken, imgSrc, to
         <DialogTrigger asChild>
            {children}
         </DialogTrigger>
-        <DialogContent className='z-[999999999999999999999999999999999] max-h-[90vh] flex flex-col justify-between   h-full max-w-96 w-full bg-neutral-700 '>
+        <DialogContent className='z-[999999999999999999999999999999999] max-h-96 flex flex-col justify-between   h-full max-w-96 w-full bg-neutral-700 '>
 
    <div className=" w-full h-full flex flex-col gap-3 justify-center">
    <Image src={imgSrc} className='self-center shadow-xl max-w-60 w-full max-h-60 rounded-lg' alt={tokenId.toString()} width={100} height={100}/>

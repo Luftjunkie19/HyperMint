@@ -32,7 +32,7 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
               <FormItem>
                 <FormLabel className="text-white font-semibold">NFT Name</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter NFT Name" />
+                  <Input className="text-white" {...field} placeholder="Enter NFT Name" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -46,7 +46,7 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
               <FormItem>
                 <FormLabel className="text-white font-semibold">NFT Description</FormLabel>
                 <FormControl>
-                  <Textarea className="resize-none h-20" {...field} placeholder="Enter NFT Description" />
+                  <Textarea  className="resize-none text-white h-20" {...field} placeholder="Enter NFT Description" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -108,6 +108,7 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
             {nftForm.watch("attributes")?.map((_, index) => (
               <div key={index} className="grid grid-cols-2 gap-2">
                 <FormField
+           
                   control={nftForm.control}
                   name={`attributes.${index}.trait_type`}
                   render={({ field }) => (
@@ -115,8 +116,9 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
                       <FormControl>
                         <Input
                           {...field}
+                     
                           placeholder={`Trait ${index + 1} Type`}
-                          className="bg-gray-900 border-gray-700"
+                          className="bg-gray-900 text-white border-gray-700"
                         />
                       </FormControl>
                       <FormMessage />
@@ -132,7 +134,7 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
                         <Input
                           {...field}
                           placeholder={`Trait ${index + 1} Value`}
-                          className="bg-gray-900 border-gray-700"
+                          className="bg-gray-900 text-white border-gray-700"
                         />
                       </FormControl>
                       <FormMessage />
@@ -144,7 +146,7 @@ export function NFTEditorSection({ nftForm, onNftImageSelect, addNft, editingNft
           </div>
 
           <div className="text-xs text-gray-400 mt-2">
-            All 5 attributes are required. Examples: Background/Blue, Rarity/Legendary, etc.
+            All 5 attributes are required. Examples: Power/100, Rarity/77, etc.
           </div>
         </div>
 

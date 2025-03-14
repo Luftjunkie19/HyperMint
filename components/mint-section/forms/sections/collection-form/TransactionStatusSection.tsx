@@ -9,7 +9,8 @@ interface TransactionStatusSectionProps {
   error: Error | null
   hash?: string
   contractAddress?: string
-  setStep: (step: number) => void
+  setStep: (step: number) => void,
+  finalData?:{conrtactAddress:`0x${string}`, symbol:string, name:string}
 }
 
 export function TransactionStatusSection({
@@ -17,7 +18,7 @@ export function TransactionStatusSection({
   isConfirming,
   isConfirmed,
   error,
-  hash,
+  hash,finalData,
   contractAddress,
   setStep,
 }: TransactionStatusSectionProps) {
@@ -59,6 +60,22 @@ export function TransactionStatusSection({
             <p className="text-gray-400 text-sm">Your NFT collection has been deployed successfully</p>
 
             <div className="w-full space-y-2 text-left">
+
+              {finalData && (
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-white">Name</span>
+                  <code className="text-xs bg-gray-900 p-2 rounded overflow-x-auto text-gray-300">
+                    {finalData.name}
+                  </code>
+                  <span className="text-sm font-medium text-white mt-2">Symbol</span> 
+                  <code className="text-xs bg-gray-900 p-2 rounded overflow-x-auto text-gray-300">
+                    {finalData.symbol}
+                  </code>
+                </div>
+              )
+              }
+
+
               {hash && (
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-white">Transaction Hash</span>
@@ -74,11 +91,11 @@ export function TransactionStatusSection({
                 </div>
               )}
 
-              {contractAddress && (
+              {finalData && (
                 <div className="flex flex-col mt-3">
                   <span className="text-sm font-medium text-white">Contract Address</span>
                   <code className="text-xs bg-gray-900 p-2 rounded overflow-x-auto text-gray-300">
-                    {contractAddress}
+                    {finalData.conrtactAddress}
                   </code>
                 </div>
               )}

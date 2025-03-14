@@ -13,6 +13,7 @@ export function NFTBasicInfoSection({ form }: NFTBasicInfoSectionProps) {
     <div className="space-y-4 bg-gray-800 p-4 rounded-lg">
       <h3 className="text-white font-semibold text-lg border-b border-gray-700 pb-2">Basic Information</h3>
 
+
       <FormField
         control={form.control}
         name="name"

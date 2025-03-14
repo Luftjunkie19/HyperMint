@@ -20,7 +20,7 @@ export function CollectionBasicInfoSection({ form }: CollectionBasicInfoSectionP
           <FormItem>
             <FormLabel className="text-white font-semibold">Collection Name</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter Collection Name" />
+              <Input className="text-white" {...field} placeholder="Enter Collection Name" />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -34,7 +34,7 @@ export function CollectionBasicInfoSection({ form }: CollectionBasicInfoSectionP
           <FormItem>
             <FormLabel className="text-white font-semibold">Collection Symbol</FormLabel>
             <FormControl>
-              <Input {...field} placeholder="Enter Collection Symbol (e.g. BTC)" />
+              <Input className="text-white" {...field} placeholder="Enter Collection Symbol (e.g. BTC)" />
             </FormControl>
             <FormDescription className="text-gray-400 text-xs">
               A short identifier for your collection (3-6 characters)

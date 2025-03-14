@@ -5,7 +5,6 @@ export const config = createConfig({
   chains: [ sepolia, zksyncSepoliaTestnet, holesky],
   transports: {
     [holesky.id]: http(),
-    [sepolia.id]: http(),
-    [zksyncSepoliaTestnet.id]: http(),
+
   },
 })

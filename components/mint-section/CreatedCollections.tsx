@@ -18,10 +18,16 @@ function CreatedCollections({}: Props) {
     });
 
 
-
-
   return (
-    <div>{data as `0x${string}`[] && (data as `0x${string}`[]).length > 0 && address && (data as `0x${string}`[]).map((item, index)=>(<CustomCollection key={index} contractAddr={item} senderAddress={address} />))}</div>
+    <div className='flex flex-col gap-4'>
+      <div className="flex flex-col gap-1">
+        <p className='text-white text-3xl font-semibold'>Created Collections</p>
+      <p className='max-w-3xl font-light text-sm w-full'>In total {data as `0x${string}`[] && (data as `0x${string}`[]).length > 0 && address && (data as `0x${string}`[]).length} collections created</p>
+      </div>
+<div className="flex items-center gap-6">
+
+      {data as `0x${string}`[] && (data as `0x${string}`[]).length > 0 && address && (data as `0x${string}`[]).map((item, index) => (<CustomCollection key={index} contractAddr={item} senderAddress={address} />))}</div>
+</div>
   )
 }
 

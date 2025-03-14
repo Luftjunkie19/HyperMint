@@ -17,7 +17,7 @@ import { formNFTSchema, type NFTFormValues } from "./TokenMinter"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
-import { useAccount, useDeployContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi"
+import { useAccount, useDeployContract, useWaitForTransactionReceipt, useWatchContractEvent, useWriteContract } from "wagmi"
 import { holeskyAbi, holeskyContractHash } from "@/contract/abi/holeskyAbi"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
@@ -55,9 +55,23 @@ function CollectionMinter() {
   const {insertNewContract}=useStore();
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
-
+const [finalDeployedContractData, setFinalDeployedContractData] = useState<{conrtactAddress:`0x${string}`, symbol:string, name:string}>();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
+  });
+
+  useWatchContractEvent({
+    address: factoryContractAddr as `0x${string}`,
+    abi:factoryAbi,
+    eventName: 'CollectionCreated',
+    onLogs(logs) {
+      setFinalDeployedContractData({
+        contractAddress: logs[0].args.collectionAddress as `0x${string}`,
+        symbol: logs[0].args.symbol,
+        name: logs[0].args.name
+      });
+      insertNewContract(logs[0].args.collectionAddress);
+    },
   })
 
   const [step, setStep] = useState(0)
@@ -393,6 +407,7 @@ function CollectionMinter() {
               hash={transactionDetails.hash}
               contractAddress={transactionDetails.contractAddress}
               setStep={setStep}
+              finalData={finalDeployedContractData}
             />
           </motion.div>
         )

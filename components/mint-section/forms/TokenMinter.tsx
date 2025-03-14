@@ -20,6 +20,9 @@ import { Stepper } from "@/components/Stepper"
 import { NFTBasicInfoSection } from "./sections/token-form/NftBasicInfoSection"
 import { NFTImageUploadSection } from "./sections/token-form/NftImageUploadSection"
 import { NftTraitsSection } from "./sections/token-form/NftTraitsSection"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem,  } from "@/components/ui/radio-group"
+
 
 export const formNFTSchema = z.object({
   name: z
@@ -58,19 +61,16 @@ export type NFTFormValues = z.infer<typeof formNFTSchema>
 function TokenMinter() {
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
-  const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError,
-    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData, failureReason, failureCount
-
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError,
+    errorUpdateCount, isLoadingError, isError: isConfirmError, data: confirmData, failureReason, failureCount
   } = useWaitForTransactionReceipt({
-
     hash,
-
-  })
+  });
 
   const [step, setStep] = useState(0)
   const steps = ["Data Entry", "File Upload", "NFT-Attributes",  "Confirmation", "Transaction"]
-
-  const form = useForm<NFTFormValues>({
+  const [selectedCustomAddress, setSelectedCustomAddress] = useState<`0x${string}`>();
+      const form = useForm<NFTFormValues>({
     resolver: zodResolver(formNFTSchema),
     defaultValues: {
       'attributes': Array(5).fill(null, 0, 5).map(() => ({ trait_type: "", value: "" })),
@@ -229,6 +229,20 @@ function TokenMinter() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
+            <div className="space-y-4 bg-gray-800 p-4 rounded-lg">
+              <h3 className="text-white font-semibold text-lg">User's Existing NFT-Collection</h3>
+  <RadioGroup >
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option-one" id="option-one" />
+    <Label htmlFor="option-one">Option One</Label>
+  </div>
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option-two" id="option-two" />
+    <Label htmlFor="option-two">Option Two</Label>
+  </div>
+</RadioGroup>
+</div>
+            
             <NFTBasicInfoSection form={form} />
            
           </motion.div>
