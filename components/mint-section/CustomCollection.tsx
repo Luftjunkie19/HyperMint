@@ -25,7 +25,7 @@ const results = useReadContracts({contracts:[
         abi: holeskyAbi,
         functionName:'name',
         args:[],
-    }
+    },
     {
         address: contractAddr,
         abi: holeskyAbi,
