@@ -1,16 +1,28 @@
 import { holeskyAbi } from '@/contract/abi/holeskyAbi'
 import React from 'react'
-import { useReadContract, useReadContracts } from 'wagmi'
+import { useAccount, useReadContract, useReadContracts, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import Image from 'next/image'
 import { HeartCrackIcon } from 'lucide-react'
 import TokenActionsModal from "./TokenActionsModal"
+
 
 type Props = {
     contractAddr:`0x${string}`,
     senderAddress:`0x${string}`
 }
 
-function CustomCollection({contractAddr, senderAddress}: Props) {
+function CustomCollection({ contractAddr, senderAddress }: Props) {
+    
+    const { address } = useAccount();
+    const { writeContract, data:writeData,
+        isPending, error } = useWriteContract({});
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError,
+    errorUpdateCount, isLoadingError, isError:isConfirmError, data:confirmData, failureReason, failureCount
+  } = useWaitForTransactionReceipt({
+      hash:
+      writeData
+  });
 
     const { data } = useReadContract({
         address: contractAddr,
@@ -35,7 +47,28 @@ const results = useReadContracts({contracts:[
         args:[],
     },
   
-]})
+]
+})
+    
+    const transferTokenToUser=(targetAddress:`0x${string}`)=>{
+        writeContract({
+          address: contractAddr, 
+          abi:holeskyAbi,
+          'account':address,
+          functionName:"safeTransferFrom",
+           args:[address as `0x${string}`,targetAddress, item.tokenId]
+          });
+      }
+    
+      const burnToken =  () => {
+        writeContract({
+          address: contractAddr, 
+          abi:holeskyAbi,
+          'account':address,
+          functionName:"burnToken",
+           args:[item.tokenId]
+          });
+      }
 
 
     return (
