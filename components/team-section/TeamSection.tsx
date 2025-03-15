@@ -37,7 +37,7 @@ function TeamSection({ }: Props) {
                   src: 'https://mecaluxpl.cdnwm.com/blog/img/nft-technologia-lancuch-dostaw.1.3.jpg',
                    'designation': 'What is this project for ? And why ?',
               'name': 'Web3, Blockchain, Crypto.....',
-              'quote': `With this project you can test how this all minting process looks like without needs to pay any REAL money. No worries, I won't require from you any private-key or anything as other phising websites do. The only thing is that you need to be connected to the ZkSync Sepolia Testnet Chain.`,
+              'quote': `With this project you can test how this all minting process looks like without needs to pay any REAL money. No worries, I won't require from you any private-key or anything as other phising websites do. The only thing is that you need to be connected to the Holesky Testnet Chain.`,
         }
           ]} />
 
