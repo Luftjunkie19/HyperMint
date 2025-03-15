@@ -10,6 +10,7 @@ import NFTMintedCard from './NFTMintedCard';
 import CollectionMinter from './forms/CollectionMinter';
 import TokenMinter from './forms/TokenMinter';
 import CreatedCollections from './CreatedCollections';
+import { FaSadCry } from 'react-icons/fa';
 type Props = {
 
 }
@@ -55,20 +56,28 @@ function MintSection({}: Props) {
               </div>
           </div>
 
-     
-    <div className="flex flex-col gap-3 text-white max-w-[90rem] mx-auto w-full">
+      {address && <>
+         <div className="flex flex-col gap-3 text-white max-w-[90rem] mx-auto w-full">
       <p className='text-3xl font-bold'>Your NFTs minted here</p>
       <p className='max-w-3xl font-light text-sm w-full'>Here are the NFTs you have minted so far. You can now see them on your wallet and here as well. I'm sure it's first the beginning of your amazing journey with NFTs.</p>
 
      
 
-{address && data &&  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
+{address && data && data.length > 0 ?  <div className="grid  grid-flow-col items-center gap-10 overflow-x-auto max-w-7xl p-4 w-full">
   {data.map((item, index) => <NFTMintedCard contractAddress={holeskyContractHash} key={index}  item={item} />)}
+        </div> : <div className="flex flex-col items-center gap-12 justify-center max-w-3xl p-4 w-full mx-auto">
+            <p className='text-white text-3xl font-semibold'>No NFTs minted yet</p>
+
+            <FaSadCry className="text-8xl text-blue-400"/>
+
+            <p className='text-white text-center text-lg font-semibold'>You can mint your first NFT now, by clicking the button above select the asset, click button, fill form, confirm, wait for the transfer and enjoy your NFT ! </p>
         </div>}
 
 
 <CreatedCollections/>
     </div>
+      </>}
+ 
 
     </div>
   )

@@ -6,6 +6,7 @@ import { DialogPortal, DialogTrigger } from '@radix-ui/react-dialog'
 import Image from 'next/image'
 import { Input } from '../ui/input'
 import { toast } from 'sonner'
+import { useAccount } from 'wagmi'
 
 type Props = {children:React.ReactNode, 
     burnToken:()=>void,
@@ -19,7 +20,7 @@ type Props = {children:React.ReactNode,
 
 function TokenActionsModal({children,attributes, transferTokenToUser, burnToken, imgSrc,tokenImageURI, tokenId, tokenURI, contractAddress, tokenName, tokenDescription}: Props) {
  const [targetAddress, setTargetAddress] = React.useState<string>('');
-    
+    const { address } = useAccount();
  
     return (
     <Dialog>
@@ -73,7 +74,12 @@ function TokenActionsModal({children,attributes, transferTokenToUser, burnToken,
      TokenURI <PictureInPicture/>
 </Button>
 
-            <Button onClick={()=>{
+                    <Button onClick={() => {
+                        if(targetAddress === address){
+                            toast.error("You cannot transfer to yourself 😅");
+                            return
+                        }
+
                 if(targetAddress.slice(0,2) === "0x" && targetAddress.length > 10){
                     transferTokenToUser(targetAddress as `0x${string}`);
                     return;
