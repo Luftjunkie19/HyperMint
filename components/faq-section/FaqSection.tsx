@@ -14,7 +14,7 @@ function FaqSection({}: Props) {
       <AccordionItem value="item-1">
         <AccordionTrigger className='text-lg text-white'>What if I don't have any HoleskyETH ?</AccordionTrigger>
         <AccordionContent className='text-neutral-300'>
-          If you have lack of SepoliaETH or you don't have any HoleskyETH, you can get it from <a className='text-blue-400 hover:underline transition-all' target='_blank' href='https://cloud.google.com/application/web3/faucet/ethereum/sepolia'>This faucet here</a>
+          If you have lack of HoleskyETH or you don't have any HoleskyETH, you can get it from <a className='text-blue-400 hover:underline transition-all' target='_blank' href='https://cloud.google.com/application/web3/faucet/ethereum/holesky'>This faucet here</a>. But you should be able to mint the NFT, with even tiny bit of the HoleskyETH, at least more than zero.
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-2">

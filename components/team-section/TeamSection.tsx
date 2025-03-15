@@ -14,12 +14,12 @@ function TeamSection({ }: Props) {
 
   return (
       <div id='team'  className='max-w-7xl w-full mx-auto flex flex-col p-2'>
-          <p className="text-white text-4xl font-semibold">About me</p>
+          <p className="text-white text-4xl font-semibold">Project Developer</p>
 
           <AnimatedTestimonials testimonials={[{
               'designation': 'Fullstack Developer',
               'name': 'Łukasz Szulc',
-              'quote': `Hi there 👋🏼, my name is Łukasz Szulc and I'm ${formatDistanceToNow(new Date('06-05-2005'))} old Fullstack Developer. Born in 06.05.2005 in Warsaw, Poland. I've started my coding journey on 1st of July 2022 and since now I constantly develop myself in CS.`,
+              'quote': `Hi there 👋🏼, my name is Łukasz Szulc and I'm ${formatDistanceToNow(new Date('06-05-2005'))} old Fullstack Developer. Born in 06.05.2005 in Warsaw, Poland. I've started my coding journey on 1st of July 2022 and since now I constantly develop myself in CS and Crypto.`,
               'src': 'https://pbs.twimg.com/media/GkgWveUXgAAFboj?format=jpg&name=large',
               socialMedia: [
                   { icon: FaGithub, url: 'https://github.com/Luftjunkie19', label: 'My Github Profile !' },
