@@ -1,12 +1,13 @@
 "use client"
 import { Check, Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { WaitForTransactionReceiptErrorType } from "viem"
 
 interface TransactionStatusSectionProps {
   isPending: boolean
   isConfirming: boolean
   isConfirmed: boolean
-  error: Error | null
+  error: WaitForTransactionReceiptErrorType  | null
   hash?: string
   contractAddress?: string
   setStep: (step: number) => void,
@@ -113,7 +114,10 @@ export function TransactionStatusSection({
               <X size={48} className="text-red-500" />
             </div>
             <p className="text-white text-lg">Transaction Failed</p>
-            <p className="text-red-400 text-sm">{error.message}</p>
+          <p className="text-red-400 text-sm ">ConfirmError: {" "} {
+                   JSON.stringify({details: (error.cause as any).details, version: (error.cause as any).version,  shortMessage: (error.cause as any).shortMessage})  
+                  }</p>
+                  
 
             <Button type="button" variant="outline" onClick={() => setStep(2)} className="mt-4">
               Try Again

@@ -66,7 +66,7 @@ function CollectionMinter() {
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
 const [finalDeployedContractData, setFinalDeployedContractData] = useState<{contractAddress: `0x${string}`, symbol: string, name: string}>();
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error:confirmError } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -417,7 +417,7 @@ const [finalDeployedContractData, setFinalDeployedContractData] = useState<{cont
               isPending={isPending}
               isConfirming={isConfirming}
               isConfirmed={isConfirmed}
-              error={error}
+              error={confirmError}
               hash={transactionDetails.hash}
               contractAddress={transactionDetails.contractAddress}
               setStep={setStep}
