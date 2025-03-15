@@ -19,9 +19,9 @@ function Navbar({ }: Props) {
   return (
       <div className='w-full h-16 p-2 fixed top-0 left-0 z-[999999] bg-[#161B22]/70 backdrop-blur-lg   text-white flex items-center justify-center gap-2'>
           <div className="max-w-[90rem] w-full justify-between items-center gap-2 flex">
-              <div className="flex items-center group gap-4 cursor-pointer">
-                  <GiGalaxy size={48} className='text-blue-400'/>
-              <p className="text-2xl group-hover:tracking-wider transition-all duration-500 font-medium text-yellow-400"> HyperMint </p>
+              <div className="flex items-center group gap-2 sm:gap-4 cursor-pointer">
+                  <GiGalaxy size={isMobile ? 36 : 48} className='text-blue-400'/>
+              <p className="text-lg sm:text-2xl group-hover:tracking-wider transition-all duration-500 font-medium text-yellow-400"> HyperMint </p>
               </div>
 
               
@@ -32,12 +32,11 @@ function Navbar({ }: Props) {
                   <Button onClick={()=>router.replace("/#mint")} >Mint</Button>
                   <Button onClick={()=>router.replace("/#team")}>Team</Button>
                   <Button onClick={()=>router.replace("/#FAQ")}>FAQ</Button>
-                  <Button onClick={()=>router.replace("/#social-media")}>Social Media</Button>
               </div>
 
               
               <div className="">
-                  <ConnectButton label='Connect' accountStatus={'address'} showBalance={isMobile ? false : true} chainStatus={'icon'}/>
+                  <ConnectButton label='Connect' accountStatus={isMobile ? 'avatar' : 'address'} showBalance={isMobile ? false : true} chainStatus={'icon'}/>
               </div>
 
           </div>

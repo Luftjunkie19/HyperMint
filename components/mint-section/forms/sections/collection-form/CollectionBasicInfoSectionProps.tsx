@@ -44,19 +44,7 @@ export function CollectionBasicInfoSection({ form }: CollectionBasicInfoSectionP
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-white font-semibold">Collection Description</FormLabel>
-            <FormControl>
-              <Textarea className="resize-none h-20" {...field} placeholder="Enter Collection Description" />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+ 
     </div>
   )
 }

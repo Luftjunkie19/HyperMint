@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export const useStore = create<{contractAddresses:`0x${string}`} & {
+export const useStore = create<{contractAddresses:`0x${string}`[]} & {
   insertNewContract: (newContractAddress:`0x${string}`) => void,
   removeAllBears: () => void,
   updateContracts: (addresses:`0x${string}`[] ) => void,

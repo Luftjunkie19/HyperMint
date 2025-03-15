@@ -32,6 +32,16 @@ import { CollectionSummarySection } from "./sections/collection-form/CollectionS
 import { TransactionStatusSection } from "./sections/collection-form/TransactionStatusSection"
 import { factoryAbi, factoryContractAddr } from "@/contract/abi/nftFactoryAbi"
 import { useStore } from "@/lib/zustandContext"
+import { Log } from "viem"
+
+type collectionEventReturnedData = Log & {
+  args: {
+    collectionAddress: `0x${string}`;
+    name: string;
+    symbol: string;
+  };
+};
+
 
 // Define the collection schema
 const collectionFormSchema = z.object({
@@ -55,7 +65,7 @@ function CollectionMinter() {
   const {insertNewContract}=useStore();
   const { isConnected, address } = useAccount()
   const { data: hash, isPending, writeContract, error } = useWriteContract()
-const [finalDeployedContractData, setFinalDeployedContractData] = useState<{conrtactAddress:`0x${string}`, symbol:string, name:string}>();
+const [finalDeployedContractData, setFinalDeployedContractData] = useState<{contractAddress: `0x${string}`, symbol: string, name: string}>();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   });
@@ -66,11 +76,11 @@ const [finalDeployedContractData, setFinalDeployedContractData] = useState<{conr
     eventName: 'CollectionCreated',
     onLogs(logs) {
       setFinalDeployedContractData({
-        contractAddress: logs[0].args.collectionAddress as `0x${string}`,
-        symbol: logs[0].args.symbol,
-        name: logs[0].args.name
+        contractAddress: (logs[0] as collectionEventReturnedData).args.collectionAddress,
+        symbol:  (logs[0] as collectionEventReturnedData).args.symbol,
+        name:  (logs[0] as collectionEventReturnedData).args.name
       });
-      insertNewContract(logs[0].args.collectionAddress);
+      insertNewContract( (logs[0] as collectionEventReturnedData).args.collectionAddress);
     },
   })
 
@@ -254,6 +264,10 @@ const [finalDeployedContractData, setFinalDeployedContractData] = useState<{conr
 
       const tokenURI = `ipfs://${metadataResponse.IpfsHash}`;
 
+       console.log(address as `0x${string}`,
+          tokenURI,
+          imageURI,
+          data.name)
 
       writeContract({
         address:factoryContractAddr as `0x${string}`,

@@ -10,8 +10,12 @@ interface TransactionStatusSectionProps {
   hash?: string
   contractAddress?: string
   setStep: (step: number) => void,
-  finalData?:{conrtactAddress:`0x${string}`, symbol:string, name:string}
-}
+  finalData: {
+    contractAddress: `0x${string}`;
+    symbol: string;
+    name: string;
+  } | undefined
+} 
 
 export function TransactionStatusSection({
   isPending,
@@ -95,7 +99,7 @@ export function TransactionStatusSection({
                 <div className="flex flex-col mt-3">
                   <span className="text-sm font-medium text-white">Contract Address</span>
                   <code className="text-xs bg-gray-900 p-2 rounded overflow-x-auto text-gray-300">
-                    {finalData.conrtactAddress}
+                    {finalData.contractAddress}
                   </code>
                 </div>
               )}

@@ -2,7 +2,14 @@
 import { useEffect } from "react";
 import { motion, stagger, useAnimate } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { poppins } from "@/app/layout";
+import { Poppins } from "next/font/google";
+import { NextFontWithVariable } from "next/dist/compiled/@next/font";
+const poppins: NextFontWithVariable  = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
+
 
 export const TextGenerateEffect = ({
   words,

@@ -5,15 +5,16 @@ import RainbowProvider from "@/providers/RainbowProvider";
 import Navbar from "@/components/navbar/Navbar";
 import { Toaster } from "@/components/ui/sonner"
 import WagmiConfigProvider from "@/providers/WagmiConfigProvider";
+import { NextFontWithVariable } from "next/dist/compiled/@next/font";
 
 
 
-export const poppins = Poppins({
+
+const poppins: NextFontWithVariable  = Poppins({
   variable: "--font-poppins",
-subsets: ["latin"],
-  weight:['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  subsets: ["latin"],
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
 });
-
 
 
 

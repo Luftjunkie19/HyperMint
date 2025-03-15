@@ -2,7 +2,7 @@
 import { z } from "zod"
 import Image from "next/image"
 import type React from "react"
-import { useRef, useState } from "react"
+import { RefObject, useRef, useState } from "react"
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { DialogHeader, DialogClose, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
@@ -22,6 +22,7 @@ import { NFTImageUploadSection } from "./sections/token-form/NftImageUploadSecti
 import { NftTraitsSection } from "./sections/token-form/NftTraitsSection"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem,  } from "@/components/ui/radio-group"
+import { useStore } from "@/lib/zustandContext"
 
 
 export const formNFTSchema = z.object({
@@ -60,13 +61,24 @@ export type NFTFormValues = z.infer<typeof formNFTSchema>
 
 function TokenMinter() {
   const { isConnected, address } = useAccount()
-  const { data: hash, isPending, writeContract, error } = useWriteContract()
+  const { data: hash, isPending, writeContract, error } = useWriteContract({
+    'mutation': {
+      'onSuccess': (data) => {
+        toast.success("Minting NFT...");
+        console.log(data);
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error("Error minting NFT");
+      }
+    }
+  })
   const { isLoading: isConfirming, isSuccess: isConfirmed, error: confirmError,
     errorUpdateCount, isLoadingError, isError: isConfirmError, data: confirmData, failureReason, failureCount
   } = useWaitForTransactionReceipt({
     hash,
   });
-
+  const { contractAddresses } = useStore();
   const [step, setStep] = useState(0)
   const steps = ["Data Entry", "File Upload", "NFT-Attributes",  "Confirmation", "Transaction"]
   const [selectedCustomAddress, setSelectedCustomAddress] = useState<`0x${string}`>();
@@ -77,7 +89,7 @@ function TokenMinter() {
     }
   })
 
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const onImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -163,15 +175,18 @@ function TokenMinter() {
         return
       }
 
-      const tokenURI = `ipfs://${metadataResponse.IpfsHash}`
-
-      console.log([address as `0x${string}`,
-          tokenURI,
-          imageURI,
-          data.name,
-          data.description,
-          data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string],
-          data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string]])
+      const tokenURI = `ipfs://${metadataResponse.IpfsHash}`;
+      
+  console.log({
+        recipient: address as `0x${string}`,
+        tokenURI,
+        imageURI,
+        tokenName: data.name,
+        tokenDescription: data.description,
+        traitTypes: data.attributes.map((attribute) => attribute.trait_type) as [string, string, string, string, string],
+        values: data.attributes.map((attribute) => attribute.value) as [string, string, string, string, string]
+      });
+    
       // Step 3: Mint NFT
       writeContract({
         abi: holeskyAbi,
@@ -231,15 +246,15 @@ function TokenMinter() {
           >
             <div className="space-y-4 bg-gray-800 p-4 rounded-lg">
               <h3 className="text-white font-semibold text-lg">User's Existing NFT-Collection</h3>
-  <RadioGroup >
-  <div className="flex items-center space-x-2">
-    <RadioGroupItem value="option-one" id="option-one" />
-    <Label htmlFor="option-one">Option One</Label>
+              <RadioGroup >
+                {contractAddresses && contractAddresses.length > 0 && contractAddresses.map((address, index) => (
+                    <div className="flex items-center space-x-2">
+    <RadioGroupItem value={address} id={address} />
+    <Label htmlFor={address}>Option One</Label>
   </div>
-  <div className="flex items-center space-x-2">
-    <RadioGroupItem value="option-two" id="option-two" />
-    <Label htmlFor="option-two">Option Two</Label>
-  </div>
+                ))}
+
+ 
 </RadioGroup>
 </div>
             
@@ -257,7 +272,7 @@ function TokenMinter() {
             className="space-y-6"
           >
 
-            <NFTImageUploadSection form={form} inputRef={inputRef} onImageSelect={onImageSelect} />
+            <NFTImageUploadSection form={form} inputRef={inputRef as RefObject<HTMLInputElement> } onImageSelect={onImageSelect} />
           </motion.div>
        
         )
@@ -318,7 +333,7 @@ function TokenMinter() {
             </div>
                 <div className="">
                   <h4 className="text-white font-semibold">Attributes</h4>
-                  <div className="grid grid-cols-3 gap-2 mt-2 max-w-  w-full">
+                  <div className="grid grid-cols-3 gap-2 mt-2 max-w-md  w-full">
                     {form.watch("attributes")?.map((attr, idx) => (
                       <div key={idx} className="bg-gray-800 p-2 flex items-center justify-between rounded-md">
                         <span className="text-blue-400 text-sm">{attr.trait_type}:</span>
@@ -426,9 +441,9 @@ function TokenMinter() {
                   </p>
 
                     <p className="text-red-400 text-sm ">ConfirmError: {" "} {
-                   JSON.stringify({details: confirmError.cause?.details, version: confirmError.cause?.version,  shortMessage: confirmError.cause?.shortMessage, failureCount})  
+                   JSON.stringify({details: (confirmError.cause as any).details, version: (confirmError.cause as any).version,  shortMessage: (confirmError.cause as any).shortMessage, failureCount})  
                   }
-                  <p>{JSON.stringify({failure:failureReason?.cause.shortMessage, failureCount})}</p>
+                  <p>{JSON.stringify({failure:(failureReason as any)?.cause.shortMessage, failureCount})}</p>
                    
 
                   </p>

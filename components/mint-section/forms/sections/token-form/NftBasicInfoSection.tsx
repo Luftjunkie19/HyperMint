@@ -35,7 +35,7 @@ export function NFTBasicInfoSection({ form }: NFTBasicInfoSectionProps) {
           <FormItem>
             <FormLabel className="text-white font-semibold">NFT Description</FormLabel>
             <FormControl>
-              <Textarea className="resize-none h-20" {...field} className="text-white" placeholder="Enter NFT Description" />
+              <Textarea className="resize-none text-white h-20" {...field} placeholder="Enter NFT Description" />
             </FormControl>
             <FormMessage />
           </FormItem>

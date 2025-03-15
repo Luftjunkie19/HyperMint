@@ -50,27 +50,8 @@ const results = useReadContracts({contracts:[
 ]
 })
     
-    const transferTokenToUser=(targetAddress:`0x${string}`)=>{
-        writeContract({
-          address: contractAddr, 
-          abi:holeskyAbi,
-          'account':address,
-          functionName:"safeTransferFrom",
-           args:[address as `0x${string}`,targetAddress, item.tokenId]
-          });
-      }
+
     
-      const burnToken =  () => {
-        writeContract({
-          address: contractAddr, 
-          abi:holeskyAbi,
-          'account':address,
-          functionName:"burnToken",
-           args:[item.tokenId]
-          });
-      }
-
-
     return (
       
     <div className="flex flex-col justify-between gap-4 w-full max-w-72 overflow-hidden  h-96 bg-neutral-700 rounded-2xl">
@@ -80,8 +61,24 @@ const results = useReadContracts({contracts:[
                         <div className="grid grid-cols-4 gap-3">
                 {data.map((item, index) => {
                     return ( 
-              <TokenActionsModal transferTokenToUser={transferTokenToUser} burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenId.toString()} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
-                  <Image className='shadow-xl cursor-pointer w-16 h-16 object-cover border border-blue-500 rounded-lg' src={`https://ipfs.io/${item.tokenURI.replace('ipfs://', 'ipfs/')}`} alt={item.tokenName} width={100} height={100}/>
+              <TokenActionsModal transferTokenToUser={(targetAddress: `0x${string}`) => {
+                            writeContract({
+                                address: contractAddr,
+                                abi: holeskyAbi,
+                                'account': address,
+                                functionName: "safeTransferFrom",
+                                args: [address as `0x${string}`, targetAddress, item.tokenId]
+                            })
+                        } } burnToken={() => {
+                            writeContract({
+                                address: contractAddr,
+                                abi: holeskyAbi,
+                                'account': address,
+                                functionName: "burnToken",
+                                args: [item.tokenId]
+                            })
+                        } } tokenDescription={item.description} tokenName={item.tokenName} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddr} attributes={item.attributes}  tokenImageURI={item.tokenImageURI}>
+                  <Image className='shadow-xl cursor-pointer w-16 h-16 object-cover border border-blue-500 rounded-lg' src={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} alt={item.tokenName} width={100} height={100}/>
               </TokenActionsModal>
           )
                 })}

@@ -9,7 +9,8 @@ import { holeskyAbi } from '@/contract/abi/holeskyAbi';
 import { TransactionStatusSection } from './forms/sections/collection-form/TransactionStatusSection';
 type Props = {item: {
     tokenId: bigint;
-    tokenURI: string;
+  tokenURI: string;
+  tokenName: string;
     tokenImageURI: string;
     description: string;
     attributes: readonly {
@@ -60,7 +61,7 @@ function NFTMintedCard({ item, contractAddress}: Props) {
        {item &&
 
            <CardContainer key={BigInt(item.tokenId)}  className='max-w-xs w-full'>
-<BackgroundGradient  className="w-full">
+<BackgroundGradient  className="w-full max-w-xs">
 <CardBody className="bg-[#161B22]/70 backdrop-blur-3xl relative group/card flex flex-col gap-3  dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-none max-w-xs w-full  h-auto rounded-xl py-10 px-6 border  ">
 <CardItem  className="w-full mt-4">
   <Image
@@ -91,12 +92,13 @@ function NFTMintedCard({ item, contractAddress}: Props) {
 
 </div>
 
-                 <div className="flex flex-wrap gap-2">
-                   {item.attributes.map((attribute) => (
-                     <div className="flex items-center gap-1">
-                       <p className=" capitalize">{attribute.trait_type}: </p>
-                       <p className="font-bold textblue-400 text-white">{attribute.value}</p>
-                     </div>
+                 
+                 <div className="grid grid-cols-2 gap-4 max-w-full w-full">
+                   {item.attributes.map((attr, idx) => (
+                   <div key={idx} className="bg-gray-800 p-2 flex items-center gap-2 rounded-md">
+                        <span className="text-blue-400 text-sm">{attr.trait_type}:</span>
+                        <span className="text-white font-semibold">{attr.value}</span>
+                      </div>
                    ))}
 </div>
 
@@ -109,7 +111,7 @@ function NFTMintedCard({ item, contractAddress}: Props) {
        </CardContainer>
 
 }
-<TokenActionsModal transferTokenToUser={transferTokenToUser} burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenId.toString()} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
+<TokenActionsModal tokenImageURI={item.tokenImageURI} attributes={item.attributes} transferTokenToUser={transferTokenToUser} burnToken={burnToken} tokenDescription={item.description} tokenName={item.tokenName} imgSrc={`https://ipfs.io/${item.tokenImageURI.replace('ipfs://', 'ipfs/')}`} tokenId={item.tokenId} tokenURI={item.tokenURI} contractAddress={contractAddress}>
 <button  className='className="px-6 w-full max-w-xs cursor-pointer py-2 rounded-md text-base bg-[#58A6FF] dark:bg-white dark:text-black text-white font-bold"'>
           Details
         </button>
