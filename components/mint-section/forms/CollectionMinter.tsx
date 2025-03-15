@@ -33,6 +33,7 @@ import { TransactionStatusSection } from "./sections/collection-form/Transaction
 import { factoryAbi, factoryContractAddr } from "@/contract/abi/nftFactoryAbi"
 import { useStore } from "@/lib/zustandContext"
 import { Log } from "viem"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 type collectionEventReturnedData = Log & {
   args: {
@@ -83,9 +84,9 @@ const [finalDeployedContractData, setFinalDeployedContractData] = useState<{cont
       insertNewContract( (logs[0] as collectionEventReturnedData).args.collectionAddress);
     },
   })
-
+const isMobile=useIsMobile();
   const [step, setStep] = useState(0)
-  const steps = ["Contract Data", "NFT Creation", "Summary", "Transaction"]
+  const steps = [isMobile ? "Contract Data" : 'Basic', isMobile ? "NFT" : "NFT Creation", "Summary", "Transaction"]
 
   const [editingNftIndex, setEditingNftIndex] = useState<number | null>(null)
   const [activeNftTab, setActiveNftTab] = useState("list")

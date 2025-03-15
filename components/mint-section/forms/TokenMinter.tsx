@@ -23,6 +23,7 @@ import { NftTraitsSection } from "./sections/token-form/NftTraitsSection"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem,  } from "@/components/ui/radio-group"
 import { useStore } from "@/lib/zustandContext"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 
 export const formNFTSchema = z.object({
@@ -78,9 +79,10 @@ function TokenMinter() {
   } = useWaitForTransactionReceipt({
     hash,
   });
+  const  isMobile  = useIsMobile();
   const { contractAddresses } = useStore();
   const [step, setStep] = useState(0)
-  const steps = ["Data Entry", "File Upload", "NFT-Attributes",  "Confirmation", "Transaction"]
+  const steps = [isMobile ? 'Basic' : '"Data Entry"', isMobile ? 'Image' : 'File Upload', isMobile ? 'Traits' : 'NFT-Attributes',  isMobile ? 'Mint' : 'Confirm', "TXN-Status"];
   const [selectedCustomAddress, setSelectedCustomAddress] = useState<`0x${string}`>();
       const form = useForm<NFTFormValues>({
     resolver: zodResolver(formNFTSchema),
@@ -242,7 +244,7 @@ function TokenMinter() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-6"
+            className="space-y-6 overflow-x-hidden"
           >
             <div className="space-y-4 bg-gray-800 p-4 rounded-lg">
               <h3 className="text-white font-semibold text-lg">User's Existing NFT-Collection</h3>
@@ -250,7 +252,7 @@ function TokenMinter() {
                 {contractAddresses && contractAddresses.length > 0 && contractAddresses.map((address, index) => (
                     <div className="flex items-center space-x-2">
     <RadioGroupItem value={address} id={address} />
-    <Label htmlFor={address}>Option One</Label>
+                    <Label htmlFor={address}>{ address}</Label>
   </div>
                 ))}
 
@@ -464,7 +466,7 @@ function TokenMinter() {
         Mint Asset
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-xl max-h-[36rem] h-full  overflow-y-auto bg-gray-700 z-[999999999]">
+      <DialogContent className="w-full max-w-xl max-h-[36rem] h-full overflow-x-hidden  overflow-y-auto bg-gray-700 z-[999999999]">
         <DialogHeader>
           <DialogTitle className="text-white text-xl">Mint Your NFT</DialogTitle>
           <DialogDescription>
