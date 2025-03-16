@@ -129,9 +129,9 @@ function TokenMinter() {
 
     // Step 1: Upload Image to IPFS
     const formData = new FormData()
-    formData.append("file", data.image!)
-    formData.append("name", data.name)
-    formData.append("description", data.description)
+    formData.append("file", data.image);
+    formData.append("name", data.name);
+    formData.append("description", data.description);
 
     const keyValues: Record<string, string> = {}
     data.attributes.forEach((attribute) => {
@@ -149,6 +149,7 @@ function TokenMinter() {
       const uploadResponse = await uploadRequest.json()
 
       if (uploadResponse.error) {
+         console.log(uploadResponse.error);
         toast.error("Error uploading image")
         return
       }
@@ -173,6 +174,7 @@ function TokenMinter() {
       const metadataResponse = await metadataRequest.json()
 
       if (metadataResponse.error) {
+        console.log(metadataResponse.error);
         toast.error("Error uploading metadata")
         return
       }

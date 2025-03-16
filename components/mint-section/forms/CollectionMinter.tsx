@@ -237,7 +237,7 @@ const isMobile=useIsMobile();
       const uploadResponse = await uploadRequest.json()
 
       if (uploadResponse.error) {
-        throw new Error(`Error uploading image for NFT `)
+        throw new Error(`Error  image for NFT `)
       }
 
       const imageCID = uploadResponse.IpfsHash
@@ -260,6 +260,7 @@ const isMobile=useIsMobile();
       const metadataResponse = await metadataRequest.json();
 
       if (metadataResponse.error) {
+        console.log(metadataResponse.error);
         throw new Error(`Error uploading metadata for NFT`);
       }
 
