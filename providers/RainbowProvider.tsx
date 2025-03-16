@@ -25,7 +25,7 @@ function RainbowProvider({children }: Props) {
 
     const config = getDefaultConfig({
   appName: 'My RainbowKit App',
-  projectId: process.env.RAINBOW_KIT_PROJECT_ID as string,
+  projectId: 'YOUR_PROJECT_ID',
   chains: [ holesky],
   ssr: true, // If your dApp uses server side rendering (SSR)
     });
