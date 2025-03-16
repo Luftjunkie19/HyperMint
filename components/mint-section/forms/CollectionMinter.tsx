@@ -232,6 +232,9 @@ const isMobile=useIsMobile();
       const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: formData,
+          headers: {
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` // Use your Pinata API Key here
+    },
       })
 
       const uploadResponse = await uploadRequest.json()
@@ -254,7 +257,11 @@ const isMobile=useIsMobile();
       const metadataRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: JSON.stringify(metadata),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` // Use your Pinata API Key here
+  
+         },
       });
 
       const metadataResponse = await metadataRequest.json();

@@ -144,6 +144,9 @@ function TokenMinter() {
       const uploadRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: formData,
+         headers: {
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` // Use your Pinata API Key here
+    },
       })
 
       const uploadResponse = await uploadRequest.json()
@@ -168,7 +171,10 @@ function TokenMinter() {
       const metadataRequest = await fetch("/api/pinata/post", {
         method: "POST",
         body: JSON.stringify(metadata),
-        headers: { "Content-Type": "application/json" },
+       headers: {
+         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+         'Content-Type': 'application/json'
+        },
       })
 
       const metadataResponse = await metadataRequest.json()
